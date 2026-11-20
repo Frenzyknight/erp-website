@@ -1,28 +1,31 @@
 import Link from "next/link";
 
-type Variant = "primary" | "light" | "dark" | "ghost" | "plain";
-type Size = "md" | "sm";
+type Variant = "primary" | "light" | "dark" | "outline" | "ghost" | "plain";
+type Size = "md" | "sm" | "lg";
 
 /* Small capitals in the monospace face on a tight-cornered block. On hover the label wipes upwards. */
 const base =
   "btn-wipe mono-label inline-flex items-center justify-center gap-2 rounded-md text-center whitespace-nowrap transition-colors duration-200 ease-out disabled:pointer-events-none disabled:opacity-50";
 
-/* 48px, and 44px for the navigation bar. */
+/* 48px, 44px for the navigation bar, and 48px growing to 72px for the pair over the footer's running name. */
 const sizes: Record<Size, string> = {
   md: "min-h-12 px-5",
   sm: "min-h-11 px-4",
+  lg: "min-h-12 px-5 md:min-h-[4.5rem] md:rounded-lg md:px-11 md:text-[0.875rem]",
 };
 
 /*
  * "primary" is the one accent button and works on any background. "light" is
  * the pale, quiet button, on navy or on a white card, and "dark" is the navy
- * one for light sheets. "ghost" and "plain" are the unfilled text buttons,
- * for navy and for light sheets.
+ * one for light sheets. "outline" is white with a navy edge, for sitting on
+ * top of a picture. "ghost" and "plain" are the unfilled text buttons, for
+ * navy and for light sheets.
  */
 const variants: Record<Variant, string> = {
   primary: "bg-blue text-white hover:bg-blue-deep",
   light: "bg-line text-navy hover:bg-mist",
   dark: "bg-navy text-white hover:bg-blue",
+  outline: "bg-white text-navy ring-1 ring-navy ring-inset hover:bg-navy hover:text-white",
   ghost: "text-white hover:bg-white/10 focus-visible:outline-sky",
   plain: "text-navy hover:bg-navy/[0.06]",
 };

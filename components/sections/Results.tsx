@@ -9,13 +9,11 @@ import { erpBenefits } from "@/lib/content";
 
 const icons: LucideIcon[] = [PiggyBank, Zap, ShieldCheck, Eye];
 const scenes = [CostScene, FlowScene, ControlScene, VisibilityScene];
-/* The panel behind each picture, alternating so the white pictures sit on navy, then on the pale panel colour. */
-const panels = ["bg-navy", "bg-line", "bg-navy", "bg-line"];
 
 /**
  * The four outcomes. On the left their names are set large and stay on screen
- * while the right side scrolls: one picture per outcome on a panel, then its
- * name in small capitals and its sentence. The name of the outcome on screen
+ * while the right side scrolls: one picture per outcome inside a hairline, then
+ * its name in small capitals and its sentence. The name of the outcome on screen
  * is dark and the others are faint; each name jumps to its picture. Below
  * "lg" the list of names is dropped and the outcomes simply stack.
  */
@@ -74,7 +72,7 @@ export function Results({ id, label, title, accent }: { id: string; label: strin
                 }}
               >
                 <Reveal>
-                  <div className={`rounded-lg p-3 md:p-6 ${panels[i]}`}>
+                  <div className="overflow-hidden rounded-lg border border-line">
                     <Scene />
                   </div>
                   <p className="mono-label mt-5 flex items-center gap-2 text-navy md:mt-6">

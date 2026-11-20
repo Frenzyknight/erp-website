@@ -10,8 +10,7 @@ export function StarMark({ className = "size-6" }: { className?: string }) {
 
 /**
  * The star in the accent colour, then the name as a wordmark in the display
- * face. It only ever sits on navy (the navigation bar and the footer), so the
- * name is white.
+ * face. It only ever sits on navy (the navigation bar), so the name is white.
  */
 export function Logo() {
   return (

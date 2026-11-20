@@ -44,6 +44,7 @@ export default function CrmAgentPage() {
         label="The result"
         title="What your business gains."
         accent="gains."
+        tone="navy"
         items={crm.gains.map((g, i) => ({ ...g, icon: gainIcons[i] }))}
       />
       <CrmRollout />

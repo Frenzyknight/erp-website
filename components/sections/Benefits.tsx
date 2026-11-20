@@ -1,8 +1,12 @@
 import type { LucideIcon } from "lucide-react";
-import { Section, SectionHeader, columns } from "@/components/ui/Section";
+import { Section, SectionHeader } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 
-/** The heading on the left; on the right the outcomes as an open list, each an icon and its name, then one line. */
+/**
+ * The outcomes as a row of tiles under the heading, so the section fills its
+ * width: each tile has its icon and number at the top and its name and one
+ * line at the foot. Two across on a tablet, four on a desktop.
+ */
 export function Benefits({
   id,
   label,
@@ -20,30 +24,30 @@ export function Benefits({
   tone?: "white" | "surface" | "navy";
 }) {
   const onDark = tone === "navy";
+  const tile = onDark ? "bg-white/[0.06]" : tone === "surface" ? "bg-white" : "bg-surface";
 
   return (
     <Section tone={tone} labelledBy={id}>
-      <div className={columns}>
-        <div className="lg:col-span-5">
-          <SectionHeader id={id} label={label} title={title} accent={accent} align="left" onDark={onDark} />
-        </div>
+      <SectionHeader id={id} label={label} title={title} accent={accent} align="left" onDark={onDark} />
 
-        <ul className="flex flex-col gap-10 md:gap-12 lg:col-span-5 lg:col-start-7">
-          {items.map(({ icon: Icon, title, body }, i) => (
-            <li key={title}>
-              <Reveal delay={i * 0.06}>
-                <h3 className={`flex items-center gap-3 text-h5 ${onDark ? "text-white" : "text-navy"}`}>
-                  <Icon aria-hidden className={`size-5 shrink-0 ${onDark ? "text-sky" : "text-blue"}`} strokeWidth={1.5} />
-                  {title}
-                </h3>
-                <p className={`mt-2 max-w-[26rem] text-body text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>
-                  {body}
-                </p>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul className="mt-12 grid gap-2 sm:grid-cols-2 md:mt-20 lg:grid-cols-4 lg:gap-3">
+        {items.map(({ icon: Icon, title, body }, i) => (
+          <li key={title}>
+            <Reveal delay={i * 0.06} className="h-full">
+              <div className={`flex h-full min-h-[12rem] flex-col rounded-lg p-5 md:p-6 lg:min-h-[15rem] ${tile}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <Icon aria-hidden className={`size-7 shrink-0 ${onDark ? "text-sky" : "text-blue"}`} strokeWidth={1.25} />
+                  <span aria-hidden className={`mono-label ${onDark ? "text-white/50" : "text-muted"}`}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className={`mt-auto pt-10 text-h5 ${onDark ? "text-white" : "text-navy"}`}>{title}</h3>
+                <p className={`mt-2 text-body text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>{body}</p>
+              </div>
+            </Reveal>
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }
