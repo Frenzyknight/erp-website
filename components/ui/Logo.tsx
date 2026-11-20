@@ -8,16 +8,22 @@ export function StarMark({ className = "size-6" }: { className?: string }) {
   );
 }
 
-/** The star in the accent colour, then the name as a wordmark: medium weight, tightly tracked. */
+/**
+ * The star in the accent colour, then the name as a wordmark in the display
+ * face. It only ever sits on navy (the navigation bar and the footer), so the
+ * name is white.
+ */
 export function Logo() {
   return (
     <Link
       href="/"
       aria-label="Polaris Consulting home"
-      className="flex shrink-0 items-center gap-2 text-ink transition-opacity duration-200 hover:opacity-80"
+      className="flex shrink-0 items-center gap-2 text-white transition-opacity duration-200 hover:opacity-80"
     >
       <StarMark className="size-5 text-blue md:size-6" />
-      <span className="text-md font-medium tracking-[-0.05em] whitespace-nowrap">Polaris Consulting</span>
+      <span className="font-display text-md tracking-[-0.02em] whitespace-nowrap md:text-[1.25rem]">
+        Polaris Consulting
+      </span>
     </Link>
   );
 }

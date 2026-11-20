@@ -1,13 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Geist_Mono, Hanken_Grotesk, Inter } from "next/font/google";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { company } from "@/lib/content";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist",
+/*
+ * Headings, reading text and the small capital labels. To change a face, swap
+ * it here and keep the variable name: the stylesheet only knows the variables.
+ */
+const display = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+});
+
+const sans = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const mono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -43,7 +57,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#0b1f3a",
 };
 
 const jsonLd = {
@@ -61,7 +75,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geist.variable} antialiased`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}>
       <body className="min-h-dvh overflow-x-clip">
         <script
           type="application/ld+json"
@@ -71,7 +85,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-navy focus:px-6 focus:py-3 focus:text-body focus:font-semibold focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-5 focus:py-4 focus:mono-label focus:text-navy"
         >
           Skip to content
         </a>

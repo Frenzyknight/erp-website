@@ -1,27 +1,30 @@
 import Link from "next/link";
 
-type Variant = "primary" | "outline" | "light" | "ghost" | "accent";
-type Size = "md" | "sm" | "lg";
+type Variant = "primary" | "light" | "dark" | "ghost" | "plain";
+type Size = "md" | "sm";
 
-/* Rounded, sentence case, and the fill changes to the accent on hover while the label wipes upwards. */
+/* Small capitals in the monospace face on a tight-cornered block. On hover the label wipes upwards. */
 const base =
-  "btn-wipe inline-flex items-center justify-center gap-2 rounded-md border text-center text-body font-semibold leading-6 whitespace-nowrap transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-60";
+  "btn-wipe mono-label inline-flex items-center justify-center gap-2 rounded-md text-center whitespace-nowrap transition-colors duration-200 ease-out disabled:pointer-events-none disabled:opacity-50";
 
-/* Heights include the 1px border: 48px, 36px, and 48px growing to 82px for the footer pair. */
+/* 48px, and 44px for the navigation bar. */
 const sizes: Record<Size, string> = {
-  md: "min-h-12 px-6 py-[11px]",
-  sm: "min-h-9 px-5 py-[5px]",
-  lg: "min-h-12 px-6 py-[11px] md:rounded-xl md:px-[54px] md:py-5 md:text-cta",
+  md: "min-h-12 px-5",
+  sm: "min-h-11 px-4",
 };
 
-/* "light" and "ghost" are for navy and blue backgrounds, where the hover fill is sky. */
+/*
+ * "primary" is the one accent button and works on any background. "light" is
+ * the pale, quiet button, on navy or on a white card, and "dark" is the navy
+ * one for light sheets. "ghost" and "plain" are the unfilled text buttons,
+ * for navy and for light sheets.
+ */
 const variants: Record<Variant, string> = {
-  primary: "border-navy bg-navy text-white hover:border-blue hover:bg-blue",
-  outline: "border-navy bg-white text-navy hover:border-blue hover:bg-blue hover:text-white",
-  light: "border-white bg-white text-navy hover:border-sky hover:bg-sky focus-visible:outline-white",
-  ghost:
-    "border-white bg-transparent text-white hover:border-sky hover:bg-sky hover:text-navy focus-visible:outline-white",
-  accent: "border-blue bg-blue text-white hover:border-blue-deep hover:bg-blue-deep",
+  primary: "bg-blue text-white hover:bg-blue-deep",
+  light: "bg-line text-navy hover:bg-mist",
+  dark: "bg-navy text-white hover:bg-blue",
+  ghost: "text-white hover:bg-white/10 focus-visible:outline-sky",
+  plain: "text-navy hover:bg-navy/[0.06]",
 };
 
 export function buttonClass(variant: Variant = "primary", className = "", size: Size = "md") {

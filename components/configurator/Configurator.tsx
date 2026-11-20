@@ -10,7 +10,7 @@ import { setBlueprint, useBlueprint } from "@/lib/blueprint-store";
 import { estimateWeeks, summarise } from "@/lib/configurator";
 import { whatsappLink } from "@/lib/content";
 
-/** A navy band holding three light cards: the controls, the live preview, and the plan with its two actions. */
+/** A navy band with a centred heading, holding three light cards: the controls, the live preview, and the plan with its two actions. */
 export function Configurator() {
   const bp = useBlueprint();
   const lenis = useLenis();
@@ -29,29 +29,30 @@ export function Configurator() {
   };
 
   return (
-    <Section id="build" tone="navy" lifted labelledBy="build-title">
+    <Section id="build" tone="navy" labelledBy="build-title">
       <SectionHeader
         id="build-title"
         label="Try it yourself"
         title="Build your ERP"
         body="Pick your industry and the modules you need. The preview updates as you go."
+        align="center"
         onDark
       />
 
       {/* Side by side only from "xl": any narrower and the preview is too tight to read. */}
-      <Reveal delay={0.09} className="mt-8 grid grid-cols-1 gap-4 md:mt-12 md:gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <Reveal delay={0.09} className="mt-12 grid grid-cols-1 gap-2 md:mt-16 lg:gap-3 xl:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="xl:sticky xl:top-24 xl:self-start">
           <Controls bp={bp} />
         </div>
 
-        <div className="space-y-4 md:space-y-6">
-          <div className="rounded-md bg-line p-2 md:rounded-lg md:p-4">
+        <div className="space-y-2 lg:space-y-3">
+          <div className="rounded-lg bg-line p-2 md:p-3">
             <DashboardPreview modules={bp.modules} size={bp.size} />
           </div>
 
-          <div className="flex flex-col gap-6 rounded-md bg-white p-6 md:rounded-lg md:p-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-6 rounded-lg bg-white p-6 md:p-8 lg:flex-row lg:items-center lg:justify-between">
             <div aria-live="polite">
-              <p className="text-h5 text-navy">
+              <p className="font-display text-h5 text-navy">
                 {count === 0
                   ? "Pick a module to see your plan"
                   : `${count} ${count === 1 ? "module" : "modules"}, live in about ${estimateWeeks(bp)} weeks`}
@@ -60,12 +61,12 @@ export function Configurator() {
                 An indicative estimate. Your final plan is set after discovery.
               </p>
             </div>
-            <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
               <a
                 href={whatsappLink(`Hi Polaris, here is my ERP blueprint:\n${summarise(bp)}`)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={buttonClass("outline", "sm:flex-1 lg:flex-none")}
+                className={buttonClass("light", "sm:flex-1 lg:flex-none")}
               >
                 <ButtonLabel>Send on WhatsApp</ButtonLabel>
               </a>

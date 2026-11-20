@@ -1,21 +1,25 @@
 import type { LucideIcon } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
+import { HeroArt } from "@/components/ui/HeroArt";
 import { Eyebrow } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
+import { SplitText } from "@/components/motion/SplitText";
 
 type Cta = { href: string; label: string };
 export type HeroFact = { icon: LucideIcon; title: string; body: string };
 
 /**
- * The opening of every page. A navy block carries the pill, the headline, the
- * supporting line and two actions; beside it a gridded panel holds a picture
- * of the product, and together they fill the screen under the navigation bar.
- * A white strip of short facts can close it. Without a picture the navy block
- * takes the full width.
+ * The opening of every page, filling the screen on navy. The headline sits
+ * low on the left over the artwork, which takes a little more than half the
+ * width and stops at a hard edge. The right side holds a picture of the
+ * product, then the supporting line and the two actions, level with the
+ * headline's foot. A hairline and a row of short facts can close it. On
+ * phones the artwork backs the headline only, and the rest stacks under it.
  */
 export function PageHero({
   label,
   title,
+  accent,
   body,
   primary,
   secondary,
@@ -25,7 +29,9 @@ export function PageHero({
   facts,
 }: {
   label: string;
-  title: React.ReactNode;
+  title: string;
+  /** A phrase from the title to set in the accent colour. */
+  accent?: string;
   body: string;
   primary: Cta;
   secondary?: Cta;
@@ -35,28 +41,34 @@ export function PageHero({
   facts?: HeroFact[];
 }) {
   return (
-    <section className="flex flex-col bg-surface lg:min-h-[calc(100svh-var(--header-h))]">
-      <div className={`grid flex-1 ${media ? "lg:grid-cols-2" : ""}`}>
-        {/* On phones and tablets the picture comes first and everything in the block is centred. */}
-        <div
-          className={`order-2 flex flex-col items-center justify-center gap-6 bg-navy px-page py-12 text-center md:py-16 lg:order-1 lg:gap-12 lg:py-20 ${
-            media ? "lg:items-start lg:text-left" : "min-h-[70svh]"
-          }`}
-        >
-          <Reveal className={`flex flex-col items-center gap-3 lg:gap-6 ${media ? "lg:items-start" : ""}`}>
-            <Eyebrow onDark>{label}</Eyebrow>
-            <h1 className="max-w-4xl text-h1 text-pretty text-white">{title}</h1>
-            <p className="max-w-3xl text-lead text-pretty text-white lg:text-white/70">{body}</p>
-          </Reveal>
+    <section
+      data-tone="dark"
+      className="relative isolate flex min-h-svh flex-col overflow-hidden bg-navy pb-[var(--sheet-r)] text-white"
+    >
+      <div className="grid flex-1 lg:grid-cols-[56fr_44fr]">
+        {/* Positioned on phones, so the artwork fills this block; from "lg" the artwork fills the section's left side instead. */}
+        <div className="relative flex min-h-[26rem] flex-col justify-end px-page pt-[calc(var(--header-h)+3rem)] pb-10 lg:static lg:min-h-0 lg:pb-12">
+          <HeroArt className="absolute top-0 left-0 size-full lg:w-[56%]" />
+          <div className="relative flex flex-col gap-5 lg:gap-7">
+            <Reveal>
+              <Eyebrow onDark>{label}</Eyebrow>
+            </Reveal>
+            <h1 className="max-w-[13em] text-h1 text-balance">
+              <SplitText text={title} accent={accent} accentClass="text-sky" />
+            </h1>
+          </div>
+        </div>
 
-          <Reveal
-            delay={0.09}
-            className={`flex w-full flex-col items-center gap-4 ${media ? "lg:items-start" : ""}`}
-          >
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              <ButtonLink href={primary.href} variant="light">
-                {primary.label}
-              </ButtonLink>
+        <div className="relative flex flex-col justify-end gap-8 px-page pt-8 pb-10 lg:pt-[calc(var(--header-h)+2rem)] lg:pb-12 lg:pl-16 xl:pl-24">
+          {media && (
+            <div aria-hidden className="order-last w-full max-w-[27rem] self-center lg:order-none lg:self-start">
+              {media}
+            </div>
+          )}
+          <Reveal delay={0.09} className="flex max-w-[27rem] flex-col gap-6">
+            <p className="text-md text-pretty text-white/90">{body}</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <ButtonLink href={primary.href}>{primary.label}</ButtonLink>
               {secondary && (
                 <ButtonLink href={secondary.href} variant="ghost">
                   {secondary.label}
@@ -66,35 +78,19 @@ export function PageHero({
             {note && <p className="text-caption text-mist">{note}</p>}
           </Reveal>
         </div>
-
-        {media && (
-          <div
-            aria-hidden
-            className="relative order-1 grid min-h-[375px] place-items-center overflow-hidden bg-surface py-8 grid-pattern md:min-h-[440px] lg:order-2"
-          >
-            {media}
-          </div>
-        )}
       </div>
 
       {facts && (
-        <div className="bg-white">
-          <div className="flex flex-col items-center gap-6 px-page py-12 lg:flex-row lg:gap-12 lg:py-8">
-            {factsTitle && (
-              <p className="max-w-[17rem] text-center text-md font-medium text-balance text-ink lg:shrink-0 lg:text-left">
-                {factsTitle}
-              </p>
-            )}
-            {/* "min-w-0" lets the four fixed-width facts narrow on a small laptop instead of pushing the page wide. */}
-            <ul className="grid w-full grid-cols-2 gap-x-4 gap-y-6 lg:flex lg:min-w-0 lg:flex-1 lg:justify-between">
+        <div className="relative px-page">
+          <div className="grid gap-x-6 gap-y-8 border-t border-white/20 py-8 lg:grid-cols-5 lg:py-10">
+            {factsTitle && <p className="mono-label max-w-[15rem] text-white/70">{factsTitle}</p>}
+            <ul className={`grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4 ${factsTitle ? "lg:col-span-4" : "lg:col-span-5"}`}>
               {facts.map(({ icon: Icon, title, body }) => (
-                <li key={title} className="flex flex-col items-center gap-3 text-center lg:w-[200px] lg:gap-4">
-                  <span className="grid size-16 shrink-0 place-items-center rounded-full bg-surface text-navy">
-                    <Icon aria-hidden className="size-7" strokeWidth={1.5} />
-                  </span>
-                  <span className="flex flex-col gap-1.5">
-                    <span className="text-body font-semibold text-ink">{title}</span>
-                    <span className="text-caption text-muted">{body}</span>
+                <li key={title} className="flex flex-col gap-3">
+                  <Icon aria-hidden className="size-5 text-sky" strokeWidth={1.5} />
+                  <span className="flex flex-col gap-1">
+                    <span className="text-body font-medium text-white">{title}</span>
+                    <span className="text-caption text-white/65">{body}</span>
                   </span>
                 </li>
               ))}
@@ -102,6 +98,9 @@ export function PageHero({
           </div>
         </div>
       )}
+
+      {/* A band of dots closes the hero; the first sheet rides up over its foot. */}
+      <div aria-hidden className="relative h-14 dot-grid md:h-24" />
     </section>
   );
 }

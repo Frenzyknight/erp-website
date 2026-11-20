@@ -171,11 +171,12 @@ export function Process() {
   const line = { d, strokeWidth: 4, strokeLinecap: "round", strokeLinejoin: "round", className: "stroke-blue" } as const;
 
   return (
-    <Section tone="surface" pattern labelledBy="process-title">
+    <Section tone="surface" labelledBy="process-title">
       <SectionHeader
         id="process-title"
         label="How we work"
         title="Understand first. Improve next. Build last."
+        accent="Build last."
         body="Technology follows the design, never the reverse."
         align="center"
       />
@@ -235,17 +236,17 @@ export function Process() {
                 </span>
 
                 <div
-                  className={`rounded-md bg-white p-2 transition-shadow duration-700 ease-out md:row-start-1 md:w-full md:max-w-[22rem] ${
+                  className={`rounded-lg bg-white p-2 transition-shadow duration-700 ease-out md:row-start-1 md:w-full md:max-w-[22rem] ${
                     cardLeft ? "md:col-start-1 md:justify-self-end" : "md:col-start-3 md:justify-self-start"
                   } ${active ? "shadow-glow" : "shadow-card"}`}
                 >
-                  <div aria-hidden className="h-48 overflow-hidden rounded-sm border border-line bg-surface">
+                  <div aria-hidden className="h-48 overflow-hidden rounded-md border border-line bg-surface">
                     <Visual on={on} />
                   </div>
                   <div className="px-4 pb-4 pt-5">
-                    <p className="text-caption font-semibold text-muted">Step {i + 1}</p>
+                    <p className="mono-label text-muted">Step {i + 1}</p>
                     <h3 className="mt-2 text-h5 text-navy">{step.title}</h3>
-                    <p className="mt-2 text-body text-pretty text-muted">{step.body}</p>
+                    <p className="mt-2 text-caption text-pretty text-muted">{step.body}</p>
                   </div>
                 </div>
               </li>

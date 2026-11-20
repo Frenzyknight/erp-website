@@ -1,37 +1,35 @@
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitText } from "@/components/motion/SplitText";
 
-type Tone = "white" | "surface" | "line" | "navy";
+type Tone = "white" | "surface" | "navy";
 
 const fills: Record<Tone, string> = {
   white: "bg-white",
   surface: "bg-surface",
-  line: "bg-line",
   navy: "bg-navy",
 };
 
 /** Shared page gutter, so the navigation, every section and the footer line up. */
 export const container = "w-full px-page";
 
+/** The 12-column grid most sections lay out on. The right half starts at column 7. */
+export const columns = "grid gap-x-6 gap-y-10 lg:grid-cols-12";
+
 /**
- * A full-width band. Bands are told apart by their fill alone: there are no
- * rules between them. "lifted" rounds the top corners and pulls the band up
- * over the one before it, which is how a navy band enters the page.
+ * A full-width band. "white" and "surface" are light sheets lying on the navy
+ * page; "navy" is the page itself showing through. The stylesheet rounds a
+ * sheet's corners wherever it meets navy (see "Sheets" in globals.css), so a
+ * section only says which tone it is.
  */
 export function Section({
   id,
   tone = "white",
-  pattern = false,
-  lifted = false,
   labelledBy,
   className = "",
   children,
 }: {
   id?: string;
   tone?: Tone;
-  /** Tiles the faint star mark behind the content. For "surface" bands. */
-  pattern?: boolean;
-  lifted?: boolean;
   labelledBy?: string;
   className?: string;
   children: React.ReactNode;
@@ -40,16 +38,15 @@ export function Section({
     <section
       id={id}
       aria-labelledby={labelledBy}
-      className={`py-16 md:py-20 lg:py-30 ${fills[tone]} ${pattern ? "mark-pattern" : ""} ${
-        lifted ? "relative -mt-8 rounded-t-2xl md:-mt-10 md:rounded-t-3xl" : ""
-      } ${className}`}
+      data-tone={tone === "navy" ? "dark" : "light"}
+      className={`py-20 md:py-28 lg:py-36 ${fills[tone]} ${className}`}
     >
       <div className={container}>{children}</div>
     </section>
   );
 }
 
-/** The small pill that names a section or a product. Outlined on navy and blue, filled with the accent elsewhere. */
+/** The small capital label that names a section, after a square dot. */
 export function Eyebrow({
   children,
   onDark = false,
@@ -60,51 +57,82 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
-    <p
-      className={`inline-flex items-center rounded-full font-semibold ${
-        onDark ? "border border-white px-5 py-[7px] text-sub text-white" : "bg-blue px-4 py-1.5 text-caption text-white"
-      } ${className}`}
-    >
+    <p className={`mono-label flex items-center gap-2.5 ${onDark ? "text-white" : "text-navy"} ${className}`}>
+      <span aria-hidden className="size-1 shrink-0 rounded-[1px] bg-current" />
       {children}
     </p>
   );
 }
 
 /**
- * The heading of a section: an optional pill, the title, and an optional
- * supporting line in the large muted size. Centred headers sit above
- * symmetrical content; left-aligned ones above grids and lists.
+ * The heading of a section: an optional label, the title in the light display
+ * face with one phrase in the accent, and an optional supporting line.
+ *
+ * "split" puts the label and the supporting line in the left half and the
+ * title, large, in the right half. "left" stacks them, for a header that
+ * shares its row with something else. "center" is for symmetrical content.
  */
 export function SectionHeader({
   id,
   label,
   title,
+  accent,
   body,
-  align = "left",
+  align = "split",
+  size = "h2",
   onDark = false,
 }: {
   id?: string;
   label?: string;
   title: string;
+  /** A phrase from the title to set in the accent colour. */
+  accent?: string;
   body?: string;
-  align?: "left" | "center";
+  align?: "split" | "left" | "center";
+  size?: "h2" | "h3";
   onDark?: boolean;
 }) {
+  const heading = (
+    <h2
+      id={id}
+      className={`text-balance ${size === "h2" ? "text-h2" : "text-h3"} ${onDark ? "text-white" : "text-navy"}`}
+    >
+      <SplitText text={title} accent={accent} accentClass={onDark ? "text-sky" : "text-blue"} />
+    </h2>
+  );
+  const eyebrow = label && (
+    <Reveal>
+      <Eyebrow onDark={onDark}>{label}</Eyebrow>
+    </Reveal>
+  );
+
+  if (align === "split") {
+    return (
+      <div className={columns}>
+        <div className="flex flex-col gap-5 lg:col-span-5">
+          {eyebrow}
+          {body && (
+            <Reveal delay={0.1}>
+              <p className={`max-w-[23rem] text-md font-medium text-pretty ${onDark ? "text-white" : "text-navy"}`}>
+                {body}
+              </p>
+            </Reveal>
+          )}
+        </div>
+        <div className="lg:col-span-6 lg:col-start-7">{heading}</div>
+      </div>
+    );
+  }
+
   const centered = align === "center";
 
   return (
-    <div className={`flex flex-col gap-4 md:gap-6 ${centered ? "items-center text-center" : "items-start"}`}>
-      {label && (
-        <Reveal>
-          <Eyebrow onDark={onDark}>{label}</Eyebrow>
-        </Reveal>
-      )}
-      <h2 id={id} className={`max-w-5xl text-h2 text-balance ${onDark ? "text-white" : "text-navy"}`}>
-        <SplitText text={title} />
-      </h2>
+    <div className={`flex flex-col gap-5 md:gap-6 ${centered ? "items-center text-center" : "items-start"}`}>
+      {eyebrow}
+      <div className={centered ? "max-w-4xl" : "max-w-3xl"}>{heading}</div>
       {body && (
         <Reveal delay={0.1}>
-          <p className={`max-w-[45rem] text-lead text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>{body}</p>
+          <p className={`max-w-[34rem] text-lead text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>{body}</p>
         </Reveal>
       )}
     </div>

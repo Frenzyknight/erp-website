@@ -11,8 +11,8 @@ import { setBlueprint } from "@/lib/blueprint-store";
  * A legend normally sits on its fieldset's top border. Floating it at full
  * width puts it inside the padding instead; the group that follows clears it.
  */
-const legend = "float-left mb-4 w-full text-caption font-semibold text-muted";
-const group = "clear-both flex w-full flex-wrap gap-2";
+const legend = "mono-label float-left mb-4 w-full text-muted";
+const group = "clear-both flex w-full flex-wrap gap-1.5";
 
 function Chips<T extends string>({
   name,
@@ -52,7 +52,7 @@ export function Controls({ bp }: { bp: Blueprint }) {
     }));
 
   return (
-    <div className="rounded-md bg-white md:rounded-lg">
+    <div className="rounded-lg bg-white">
       <fieldset className="p-6">
         <legend className={legend}>Industry</legend>
         <Chips

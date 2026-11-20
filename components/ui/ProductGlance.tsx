@@ -2,7 +2,7 @@ import { CheckCheck } from "lucide-react";
 import { StarMark } from "@/components/ui/Logo";
 
 /*
- * Small, static pictures of the two products, for the hero panels. They echo
+ * Small, static pictures of the two products, for the heroes. They echo
  * the interactive dashboard and the phone further down the page, and use the
  * same illustrative figures. The shop, the customer and every number are made up.
  */
@@ -30,12 +30,12 @@ const messages = [
 const tile = "rounded-sm bg-white p-2.5";
 const tileTitle = "truncate text-micro font-semibold text-muted";
 
-/** The pill that names a product, sitting just above its picture. */
-export function GlanceTag({ children, tone = "navy" }: { children: React.ReactNode; tone?: "navy" | "blue" }) {
+/** The label that names a product, sitting just above its picture. The pictures sit on navy, so the labels are white or blue. */
+export function GlanceTag({ children, tone = "white" }: { children: React.ReactNode; tone?: "white" | "blue" }) {
   return (
     <p
-      className={`mb-2 inline-flex rounded-full px-3 py-1 text-sub font-semibold text-white ${
-        tone === "navy" ? "bg-navy" : "bg-blue"
+      className={`mono-label mb-2 inline-flex rounded-sm px-2 py-1 ${
+        tone === "white" ? "bg-white text-navy" : "bg-blue text-white"
       }`}
     >
       {children}
@@ -113,8 +113,9 @@ export function ErpGlance({ className = "" }: { className?: string }) {
  */
 export function ChatGlance({ className = "", short = false }: { className?: string; short?: boolean }) {
   return (
-    <div className={`rounded-2xl bg-navy p-1.5 shadow-float ${className}`}>
-      <div className="overflow-hidden rounded-[26px] bg-surface">
+    // The hairline ring keeps the navy handset visible where it sits on the navy hero.
+    <div className={`rounded-2xl bg-navy p-1.5 shadow-float ring-1 ring-white/25 ${className}`}>
+      <div className="overflow-hidden rounded-xl bg-surface">
         <div className="flex items-center gap-2 bg-navy px-3 pb-2.5 pt-2 text-white">
           <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white">
             <StarMark className="size-3.5 text-blue" />
@@ -161,8 +162,8 @@ export function ChatGlance({ className = "", short = false }: { className?: stri
 /** Both products together: the ERP window behind, the phone in front and drifting slowly. */
 export function ProductPair() {
   return (
-    <div className="relative mx-auto aspect-[10/9] w-[min(90%,21rem)] sm:aspect-[10/7.6] sm:w-[min(86%,38rem)]">
-      <span aria-hidden className="absolute bottom-[8%] right-[2%] size-[52%] rounded-full bg-blue/25 blur-3xl" />
+    <div className="relative aspect-[10/9] w-full sm:aspect-[10/7.6]">
+      <span aria-hidden className="absolute bottom-[8%] right-[2%] size-[52%] rounded-full bg-blue/30 blur-3xl" />
       <div className="absolute left-0 top-0 w-[86%] sm:w-[80%]">
         <GlanceTag>Custom ERP</GlanceTag>
         <ErpGlance />

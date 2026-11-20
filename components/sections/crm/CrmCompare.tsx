@@ -3,31 +3,30 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { crm } from "@/lib/content";
 
-const card = "flex h-full flex-col gap-5 rounded-md p-6 md:rounded-lg md:p-8";
+const card = "flex h-full flex-col rounded-lg p-5 md:p-8";
 
-/** Two cards side by side: today on the quiet surface, the opportunity on navy. The navy one grows a little on hover. */
+/** Two cards set close together: today on the quiet surface, the opportunity on navy. Their points run as rows between hairlines. */
 export function CrmCompare() {
   return (
-    <Section tone="line" labelledBy="crm-compare-title">
+    <Section labelledBy="crm-compare-title">
       <SectionHeader
         id="crm-compare-title"
         label="Where you are today"
         title="Your billing software works. What happens after the bill does not."
+        accent="What happens after the bill does not."
         body="Customer data and billing already run well. Post-sales engagement on WhatsApp is still manual, untracked and easy to forget."
-        align="center"
       />
 
-      <div className="mx-auto mt-8 grid max-w-[1040px] gap-4 md:mt-12 md:grid-cols-2 md:gap-6">
+      <div className="mt-12 grid gap-2 md:mt-20 md:grid-cols-2 lg:gap-3">
         <Reveal className="h-full">
           <div className={`${card} bg-surface`}>
-            <h3 className="text-h5 text-navy">Today</h3>
-            <span aria-hidden className="h-px w-full bg-line" />
-            <ul className="space-y-4">
+            <h3 className="text-h4 text-navy">Today</h3>
+            <ul className="mt-8 border-t border-line md:mt-10">
               {crm.today.map((t) => (
-                <li key={t.title} className="flex gap-3">
-                  <CircleX aria-hidden className="size-5 shrink-0 text-muted" />
+                <li key={t.title} className="flex gap-4 border-b border-line py-5">
+                  <CircleX aria-hidden className="mt-0.5 size-5 shrink-0 text-muted" strokeWidth={1.5} />
                   <div>
-                    <p className="text-body font-semibold text-ink">{t.title}</p>
+                    <p className="text-body font-medium text-navy">{t.title}</p>
                     <p className="mt-1.5 text-body text-muted">{t.body}</p>
                   </div>
                 </li>
@@ -37,13 +36,12 @@ export function CrmCompare() {
         </Reveal>
 
         <Reveal delay={0.09} className="h-full">
-          <div className={`${card} bg-navy transition-transform duration-1000 ease-rise lg:hover:scale-[1.04]`}>
-            <h3 className="text-h5 text-white">The opportunity</h3>
-            <span aria-hidden className="h-px w-full bg-white/60" />
-            <ul className="space-y-4">
+          <div className={`${card} bg-navy`}>
+            <h3 className="text-h4 text-white">The opportunity</h3>
+            <ul className="mt-8 border-t border-white/20 md:mt-10">
               {crm.opportunity.map((o) => (
-                <li key={o} className="flex gap-3">
-                  <CircleCheck aria-hidden className="size-5 shrink-0 text-sky" />
+                <li key={o} className="flex gap-4 border-b border-white/20 py-5">
+                  <CircleCheck aria-hidden className="mt-0.5 size-5 shrink-0 text-sky" strokeWidth={1.5} />
                   <p className="text-body text-white">{o}</p>
                 </li>
               ))}

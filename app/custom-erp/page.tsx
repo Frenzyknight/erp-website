@@ -24,10 +24,11 @@ export default function CustomErpPage() {
       <PageHero
         label="Custom ERP"
         title="An ERP designed around how your organisation actually works."
+        accent="how your organisation actually works."
         body="We fix the process first, then build only the modules your business runs on."
         primary={{ href: "#build", label: "Build your ERP" }}
         secondary={{ href: "#contact", label: "Book a free process review" }}
-        media={<ErpGlance className="w-[min(88%,34rem)]" />}
+        media={<ErpGlance />}
       />
       <Statement label="The problem" text={statements.erp} />
       <ModulesGrid />
@@ -35,8 +36,9 @@ export default function CustomErpPage() {
         id="erp-benefits-title"
         label="The result"
         title="What a custom ERP changes for you."
+        accent="changes for you."
         items={erpBenefits.map((b, i) => ({ ...b, icon: benefitIcons[i] }))}
-        tone="surface"
+        tone="navy"
       />
       <Investment />
       <Configurator />

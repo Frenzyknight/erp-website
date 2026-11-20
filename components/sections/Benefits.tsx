@@ -1,42 +1,49 @@
 import type { LucideIcon } from "lucide-react";
-import { Section, SectionHeader } from "@/components/ui/Section";
-import { StripCard } from "@/components/ui/StripCard";
+import { Section, SectionHeader, columns } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 
-/** Four outcomes, one card each, rising in one after another. */
+/** The heading on the left; on the right the outcomes as an open list, each an icon and its name, then one line. */
 export function Benefits({
   id,
   label,
   title,
+  accent,
   items,
   tone = "white",
 }: {
   id: string;
   label: string;
   title: string;
+  /** A phrase from the title to set in the accent colour. */
+  accent?: string;
   items: { icon: LucideIcon; title: string; body: string }[];
-  tone?: "white" | "surface";
+  tone?: "white" | "surface" | "navy";
 }) {
+  const onDark = tone === "navy";
+
   return (
     <Section tone={tone} labelledBy={id}>
-      <SectionHeader id={id} label={label} title={title} />
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-6 xl:grid-cols-4">
-        {items.map(({ icon: Icon, title, body }, i) => (
-          <li key={title}>
-            <Reveal delay={i * 0.09} className="h-full">
-              <StripCard
-                index={i}
-                onSurface={tone === "surface"}
-                icon={<Icon aria-hidden className="size-7" strokeWidth={1.5} />}
-              >
-                <h3 className="mt-10 text-body font-semibold text-ink">{title}</h3>
-                <span aria-hidden className="my-4 h-px w-full bg-line" />
-                <p className="text-caption text-muted">{body}</p>
-              </StripCard>
-            </Reveal>
-          </li>
-        ))}
-      </ul>
+      <div className={columns}>
+        <div className="lg:col-span-5">
+          <SectionHeader id={id} label={label} title={title} accent={accent} align="left" onDark={onDark} />
+        </div>
+
+        <ul className="flex flex-col gap-10 md:gap-12 lg:col-span-5 lg:col-start-7">
+          {items.map(({ icon: Icon, title, body }, i) => (
+            <li key={title}>
+              <Reveal delay={i * 0.06}>
+                <h3 className={`flex items-center gap-3 text-h5 ${onDark ? "text-white" : "text-navy"}`}>
+                  <Icon aria-hidden className={`size-5 shrink-0 ${onDark ? "text-sky" : "text-blue"}`} strokeWidth={1.5} />
+                  {title}
+                </h3>
+                <p className={`mt-2 max-w-[26rem] text-body text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>
+                  {body}
+                </p>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </div>
     </Section>
   );
 }

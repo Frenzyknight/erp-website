@@ -10,7 +10,7 @@ import { useReducedMotionSafe } from "@/lib/hooks";
 const icons: LucideIcon[] = [Receipt, RefreshCw, Bot, Send, UserRound];
 const lastIndex = crm.workflow.length - 1;
 
-/** Five stages joined by a line; it fills, and a small marker travels along it, as the visitor scrolls. */
+/** Five stages on navy, joined by a line; it fills, and a small marker travels along it, as the visitor scrolls. */
 export function CrmWorkflow() {
   const ref = useRef<HTMLOListElement>(null);
   const reduce = useReducedMotionSafe();
@@ -23,23 +23,25 @@ export function CrmWorkflow() {
   });
 
   const step = reduce ? lastIndex : reached;
-  const fill = "absolute inset-0 rounded-full bg-blue";
-  const marker = "absolute size-3 rounded-full bg-blue ring-4 ring-surface";
+  const fill = "absolute inset-0 rounded-full bg-sky";
+  const marker = "absolute size-3 rounded-full bg-sky ring-4 ring-navy";
 
   return (
-    <Section id="how-it-works" tone="surface" pattern labelledBy="workflow-title">
+    <Section id="how-it-works" tone="navy" labelledBy="workflow-title">
       <SectionHeader
         id="workflow-title"
         label="How it works"
         title="What happens after every bill"
+        accent="after every bill"
         body="The agent connects to your existing billing and customer data, and handles the rest."
         align="center"
+        onDark
       />
 
-      {/* Each stage is a 4rem circle, so both lines run through the centre of the circles (2rem in). */}
-      <ol ref={ref} className="relative mt-10 grid gap-8 md:mt-16 md:grid-cols-5 md:gap-0">
+      {/* Each stage is a 4rem tile, so both lines run through the centre of the tiles (2rem in). */}
+      <ol ref={ref} className="relative mt-12 grid gap-8 md:mt-20 md:grid-cols-5 md:gap-0">
         {/* Vertical line on small screens */}
-        <span aria-hidden className="absolute bottom-8 left-[1.875rem] top-8 w-1 rounded-full bg-mist/50 md:hidden">
+        <span aria-hidden className="absolute bottom-8 left-[1.875rem] top-8 w-1 rounded-full bg-white/15 md:hidden">
           {reduce ? (
             <span className={fill} />
           ) : (
@@ -49,10 +51,10 @@ export function CrmWorkflow() {
             </>
           )}
         </span>
-        {/* Horizontal line on wide screens, running from the first circle to the last */}
+        {/* Horizontal line on wide screens, running from the first tile to the last */}
         <span
           aria-hidden
-          className="absolute left-8 right-[calc(20%-2rem)] top-[1.875rem] hidden h-1 rounded-full bg-mist/50 md:block"
+          className="absolute left-8 right-[calc(20%-2rem)] top-[1.875rem] hidden h-1 rounded-full bg-white/15 md:block"
         >
           {reduce ? (
             <span className={fill} />
@@ -70,16 +72,17 @@ export function CrmWorkflow() {
           return (
             <li key={w.title} className="relative flex items-center gap-5 md:flex-col md:items-start md:gap-0 md:pr-6">
               <span
-                className={`grid size-16 shrink-0 place-items-center rounded-full text-white transition-colors duration-500 ease-out ${
-                  on ? "bg-navy" : "bg-mist"
+                className={`grid size-16 shrink-0 place-items-center rounded-md transition-colors duration-500 ease-out ${
+                  // Opaque when off, so the line behind does not show through the tile.
+                  on ? "bg-blue text-white" : "bg-[color-mix(in_srgb,white_10%,var(--color-navy))] text-white/50"
                 }`}
               >
                 <Icon aria-hidden className="size-7" strokeWidth={1.5} />
               </span>
               <div className="md:mt-6">
-                <p className="text-caption font-semibold text-muted">Step {i + 1}</p>
-                <h3 className="mt-1.5 text-md font-medium text-navy">{w.title}</h3>
-                <p className="mt-1.5 text-body text-muted">{w.body}</p>
+                <p className="mono-label text-mist">Step {i + 1}</p>
+                <h3 className="mt-2 text-h5 text-white">{w.title}</h3>
+                <p className="mt-1.5 text-caption text-white/70">{w.body}</p>
               </div>
             </li>
           );

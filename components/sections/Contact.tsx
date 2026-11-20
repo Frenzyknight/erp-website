@@ -1,11 +1,11 @@
 import { ArrowRight, Mail, MessageCircle, Phone, type LucideIcon } from "lucide-react";
-import { Eyebrow, Section } from "@/components/ui/Section";
+import { Eyebrow, Section, columns } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitText } from "@/components/motion/SplitText";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { company, whatsappLink } from "@/lib/content";
 
-/** A row that lightens on hover, while its arrow turns from diagonal to level. */
+/** A row between hairlines. On hover it turns sky and its arrow turns from diagonal to level. */
 function ContactLink({
   href,
   icon: Icon,
@@ -21,50 +21,54 @@ function ContactLink({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="group flex items-center gap-4 rounded-md px-3 py-3 text-white transition-colors duration-200 ease-out hover:bg-white/15 focus-visible:outline-white"
+      className="group flex items-center gap-4 border-b border-white/15 py-4 text-white transition-colors duration-200 ease-out hover:text-sky"
     >
-      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
-        <Icon aria-hidden className="size-5" strokeWidth={1.75} />
-      </span>
+      <Icon aria-hidden className="size-5 shrink-0 text-sky" strokeWidth={1.5} />
       {/* The email address may break anywhere where the column is narrow. */}
-      <span className="min-w-0 flex-1 text-body font-semibold wrap-anywhere">{children}</span>
+      <span className="min-w-0 flex-1 text-md wrap-anywhere">{children}</span>
       <ArrowRight
         aria-hidden
-        strokeWidth={2}
-        className="hidden size-5 shrink-0 -rotate-45 transition-transform duration-300 ease-swift group-hover:rotate-0 sm:block"
+        strokeWidth={1.5}
+        className="size-5 shrink-0 -rotate-45 transition-transform duration-300 ease-swift group-hover:rotate-0"
       />
     </a>
   );
 }
 
-/** The one panel in the accent colour: the invitation and the direct lines on blue, the form on a white card. */
+/**
+ * The last section, on navy, running on into the footer. The invitation and
+ * the direct lines on the left; the form on a white card on the right.
+ */
 export function Contact({
   title = "Ready for an ERP that fits the way you work?",
+  accent = "fits the way you work?",
   body = "Let us understand your business first. Tell us a little about it and we will set up a free process review.",
   defaultInterest,
   formTitle,
   submitLabel,
 }: {
   title?: string;
+  /** A phrase from the title to set in the accent colour. */
+  accent?: string;
   body?: string;
   defaultInterest?: "erp" | "crm" | "consulting" | "not-sure";
   formTitle?: string;
   submitLabel?: string;
 }) {
   return (
-    <Section id="contact" labelledBy="contact-title">
-      <div className="grid gap-2 rounded-md bg-blue p-2 md:rounded-lg md:p-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-4">
-        <div className="flex flex-col items-start gap-6 px-4 py-8 md:p-8 lg:gap-8">
+    <Section id="contact" tone="navy" labelledBy="contact-title">
+      <div className={columns}>
+        <div className="flex flex-col items-start gap-6 lg:col-span-5">
           <Eyebrow onDark>Contact</Eyebrow>
-          <h2 id="contact-title" className="text-h2 text-balance text-white">
-            <SplitText text={title} />
+          <h2 id="contact-title" className="text-h3 text-balance text-white">
+            <SplitText text={title} accent={accent} accentClass="text-sky" />
           </h2>
           <Reveal>
-            <p className="text-md text-pretty text-white/90 lg:text-lead">{body}</p>
+            <p className="max-w-[30rem] text-lead text-pretty text-white/70">{body}</p>
           </Reveal>
 
-          <Reveal delay={0.09} className="mt-auto w-full">
-            <ul className="-mx-3">
+          <Reveal delay={0.09} className="mt-auto w-full pt-6">
+            <ul className="border-t border-white/15">
               <li>
                 <ContactLink
                   href={whatsappLink("Hi Polaris, I'd like a free process review for my business.")}
@@ -88,7 +92,7 @@ export function Contact({
           </Reveal>
         </div>
 
-        <div className="rounded-sm bg-white md:rounded-md">
+        <div className="rounded-lg bg-white lg:col-span-6 lg:col-start-7">
           <EnquiryForm defaultInterest={defaultInterest} title={formTitle} submitLabel={submitLabel} />
         </div>
       </div>

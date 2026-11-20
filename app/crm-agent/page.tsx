@@ -24,15 +24,17 @@ export default function CrmAgentPage() {
       <PageHero
         label="Post-Sales CRM Agent"
         title="Turn every sale into a lasting customer relationship."
+        accent="a lasting customer relationship."
         body="Our agent connects to your billing software and keeps the conversation going on WhatsApp: automatically, personally and on time."
         primary={{ href: "#contact", label: "Get a demo" }}
         secondary={{ href: "#how-it-works", label: "See how it works" }}
-        media={<ChatGlance className="w-[min(68%,20rem)]" />}
+        media={<ChatGlance className="w-[min(72%,17rem)]" />}
       />
       <CrmCompare />
       <CrmShowcase
         label="The solution"
         title="One agent for everything after the sale."
+        accent="everything after the sale."
         body="It runs on the official WhatsApp Business API and uses the customer data you already have."
         items={crm.solution}
       />
@@ -41,11 +43,13 @@ export default function CrmAgentPage() {
         id="crm-gains-title"
         label="The result"
         title="What your business gains."
+        accent="gains."
         items={crm.gains.map((g, i) => ({ ...g, icon: gainIcons[i] }))}
       />
       <CrmRollout />
       <Contact
         title="Ready to turn every sale into a lasting relationship?"
+        accent="a lasting relationship?"
         body="Tell us which billing software you use and we will show you how the agent would work for your business."
         defaultInterest="crm"
         formTitle="Get a demo"

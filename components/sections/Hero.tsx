@@ -16,6 +16,7 @@ export function Hero() {
     <PageHero
       label="Custom ERP + Post-Sales CRM Agent"
       title="Software that fits your business, and keeps customers coming back."
+      accent="fits your business,"
       body="We build custom ERP around the way your teams actually work, and a WhatsApp agent that follows up after every sale."
       primary={{ href: "/custom-erp", label: "Explore Custom ERP" }}
       secondary={{ href: "/crm-agent", label: "Explore the CRM Agent" }}
