@@ -45,16 +45,26 @@ function Head({ icon, strong = false, children }: { icon: React.ReactNode; stron
   );
 }
 
-/** A dashed arrow, and a dot that crosses it when its turn comes. */
+/**
+ * A dashed arrow. Its dashes drift towards the head all the time. On its turn
+ * a streak with a bright tip runs along the shaft, and the head kicks forward
+ * in the accent colour as the streak lands.
+ */
 function Arrow({ turn }: { turn: number }) {
   return (
-    <span className="relative flex w-8 shrink-0 items-center text-mist">
-      <span className="flex-1 border-t border-dashed border-current" />
-      <ChevronRight className="-ml-1.5 size-3.5 shrink-0" />
-      <span
-        style={at(turn)}
-        className="absolute top-1/2 left-0 size-1.5 -translate-y-1/2 animate-scene-travel rounded-full bg-blue opacity-0"
-      />
+    <span className="flex w-10 shrink-0 items-center text-mist">
+      {/* The shaft clips the dashes, which are a strip twice its width sliding by one dash and gap, and the streak. */}
+      <span className="relative h-1.5 flex-1 overflow-hidden">
+        <span className="scene-dashes absolute top-1/2 left-0 h-px w-[200%] -translate-y-1/2 animate-scene-march" />
+        <span
+          style={at(turn)}
+          className="absolute inset-y-0 flex w-6 animate-scene-travel items-center opacity-0"
+        >
+          <span className="h-0.5 flex-1 rounded-full bg-linear-to-r from-blue/0 to-blue" />
+          <span className="-ml-0.5 size-1 shrink-0 rounded-full bg-blue" />
+        </span>
+      </span>
+      <ChevronRight style={at(turn)} className="-ml-1.5 size-4 shrink-0 animate-scene-arrive" strokeWidth={2.25} />
     </span>
   );
 }
@@ -115,19 +125,34 @@ export function CostScene() {
 
         <Arrow turn={1.1} />
 
-        <div className="flex h-48 w-28 flex-col items-center justify-center gap-4 rounded-sm bg-navy">
-          <span style={at(2)} className="block animate-scene-turn">
-            <StarMark className="size-12 text-white" />
-          </span>
-          <ul className="flex flex-col items-center gap-1.5">
+        <div className="flex h-48 w-34 flex-col rounded-sm bg-navy p-3">
+          {/* The star sits in a halo, and a ring spreads from it as it turns. */}
+          <div className="grid flex-1 place-items-center pb-3">
+            <span className="relative grid size-14 place-items-center rounded-full bg-white/8 ring-1 ring-white/15">
+              <span
+                style={at(2)}
+                className="absolute inset-0 animate-scene-ripple rounded-full border border-sky opacity-0 [--ripple:1.4]"
+              />
+              <span style={at(2)} className="block animate-scene-turn">
+                <StarMark className="size-8 text-white" />
+              </span>
+            </span>
+          </div>
+          {/* One list, a row to a check. Each row lights up and is ticked again on its turn. */}
+          <ul className="flex flex-col divide-y divide-white/10 overflow-hidden rounded-sm bg-white/8">
             {checks.map((c, i) => (
               <li
                 key={c}
                 style={at(2.2 + i * 0.4)}
-                className={`flex animate-scene-glow items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-micro font-medium whitespace-nowrap text-white ${skyGlow}`}
+                className={`flex animate-scene-glow items-center justify-between gap-2 px-2.5 py-2 text-micro font-medium whitespace-nowrap text-white ${skyGlow}`}
               >
-                <span className="size-1 rounded-full bg-sky" />
                 {c}
+                <span
+                  style={at(2.2 + i * 0.4)}
+                  className="grid size-3.5 shrink-0 animate-scene-pop place-items-center rounded-full bg-sky text-navy"
+                >
+                  <Check className="size-2.5" strokeWidth={3} />
+                </span>
               </li>
             ))}
           </ul>
@@ -135,7 +160,7 @@ export function CostScene() {
 
         <Arrow turn={3.5} />
 
-        <div className="flex h-48 w-48 flex-col rounded-sm bg-navy p-4">
+        <div className="flex h-48 w-44 flex-col rounded-sm bg-navy p-4">
           <div className="flex items-center justify-between">
             <span className="text-micro font-semibold text-sky">Stock levels</span>
             <span className="rounded-[3px] bg-white/10 px-1.5 py-0.5 font-mono text-micro text-mist">Live</span>
@@ -220,62 +245,74 @@ const picked = 11;
 
 /**
  * Full control: many records, and the one that needs a decision in front of
- * the person who makes it. A check sweeps the grid, the beam opens from the
- * picked record, its values are read, and Approve is pressed.
+ * the person who makes it. A scan line runs down the grid, the record it
+ * found is picked out, the beam opens from that record to the card, its
+ * values are read, and Approve is pressed.
  */
 export function ControlScene() {
   return (
     <Scene label="Out of a grid of records, one purchase order is held for a manager to approve or reject">
-      {/* Five columns of 12 with gaps of 3. */}
-      <div className="absolute top-1/2 left-10 grid -translate-y-1/2 grid-cols-5 gap-3">
-        {Array.from({ length: 20 }, (_, i) =>
-          i === picked ? (
+      <div className="absolute top-1/2 left-16 -translate-y-1/2">
+        {/* Five columns of 12 with gaps of 3. The scan line reaches a new row every 0.37s, and the row lights up under it. */}
+        <div className="grid grid-cols-5 gap-3">
+          {Array.from({ length: 20 }, (_, i) => (
             <span
               key={i}
-              className="relative grid size-12 place-items-center rounded-sm border border-blue bg-white text-blue ring-4 ring-blue/15"
+              style={at(0.24 + Math.floor(i / 5) * 0.37)}
+              className="relative grid size-12 animate-scene-flash place-items-center rounded-sm border border-line bg-surface text-mist"
             >
               <FileText className="size-5" strokeWidth={1.5} />
-              <span
-                style={at(1.7)}
-                className="absolute inset-0 animate-scene-ripple rounded-sm border-2 border-blue opacity-0 [--ripple:1.7]"
-              />
+              {i === picked && (
+                <>
+                  {/* The picked look lies over the plain record, so the record is plain while it is being scanned. */}
+                  <span className="absolute -inset-px grid animate-scene-select place-items-center rounded-sm border border-blue bg-white text-blue ring-4 ring-blue/15">
+                    <FileText className="size-5" strokeWidth={1.5} />
+                  </span>
+                  <span
+                    style={at(1.9)}
+                    className="absolute -inset-px animate-scene-ripple rounded-sm border-2 border-blue opacity-0 [--ripple:1.7]"
+                  />
+                </>
+              )}
             </span>
-          ) : (
-            <span
-              key={i}
-              style={at(0.2 + i * 0.07)}
-              className="grid size-12 animate-scene-glow place-items-center rounded-sm border border-line bg-surface text-mist"
-            >
-              <FileText className="size-5" strokeWidth={1.5} />
-            </span>
-          ),
-        )}
-      </div>
-
-      {/* The beam opens from the right edge of the picked record to the height of the card. */}
-      <span style={at(1.9)} className="absolute top-18 left-37 h-64 w-57 animate-scene-wipe">
-        <span className="block size-full bg-linear-to-r from-blue/30 to-blue/10 [clip-path:polygon(0_61.7%,100%_3%,100%_97%)]" />
-      </span>
-
-      <div className="absolute top-18 right-10 flex h-64 w-56 flex-col gap-3 rounded-md border-2 border-navy bg-white p-4 shadow-float">
-        {/* The badge reads "Approval" until the button is pressed, then "Approved" for a few seconds. */}
-        <span className="relative self-center text-micro font-semibold tracking-[0.08em] whitespace-nowrap uppercase">
-          <span
-            style={at(4.1)}
-            className="inline-flex animate-scene-swap-out items-center gap-1.5 rounded-full bg-tint px-2.5 py-1 text-blue"
-          >
-            <span className="size-1.5 rounded-full bg-blue" />
-            Approval
-          </span>
-          <span
-            style={at(4.1)}
-            className="absolute top-0 left-1/2 inline-flex h-full -translate-x-1/2 animate-scene-swap-in items-center gap-1 rounded-full bg-blue px-2.5 text-white opacity-0"
-          >
-            <Check className="size-3" strokeWidth={3} />
-            Approved
+          ))}
+        </div>
+        {/* The scan line overhangs the grid a little, and trails a wash behind it. The box clips the wash at the top. */}
+        <span className="absolute -inset-x-3 -inset-y-1.5 overflow-hidden">
+          <span className="absolute inset-0 animate-scene-scan">
+            <span className="absolute inset-x-0 bottom-full h-12 bg-linear-to-t from-blue/20 to-blue/0" />
+            <span className="absolute inset-x-0 top-0 h-0.5 -translate-y-1/2 rounded-full bg-blue" />
           </span>
         </span>
-        <span className="text-center font-mono text-sub">purchase-order</span>
+      </div>
+
+      {/* The beam widens from the right edge of the picked record to the height of the card, and grows out of its point. */}
+      <span className="absolute top-18 left-43 h-64 w-57 origin-[0_61.7%] animate-scene-beam bg-linear-to-r from-blue/30 to-blue/10 [clip-path:polygon(0_61.7%,100%_3%,100%_97%)]" />
+
+      <div className="absolute top-18 right-16 flex h-64 w-44 flex-col gap-3 rounded-md border-2 border-navy bg-white p-3.5 shadow-float">
+        <div className="flex items-center justify-between">
+          <span className="grid size-7 shrink-0 place-items-center rounded-full bg-navy text-white">
+            <UserRound className="size-3.5" />
+          </span>
+          {/* The badge reads "Approval" until the button is pressed, then "Approved" for a few seconds. */}
+          <span className="relative text-micro font-semibold tracking-[0.08em] whitespace-nowrap uppercase">
+            <span
+              style={at(4.1)}
+              className="inline-flex animate-scene-swap-out items-center gap-1.5 rounded-full bg-tint px-2.5 py-1 text-blue"
+            >
+              <span className="size-1.5 rounded-full bg-blue" />
+              Approval
+            </span>
+            <span
+              style={at(4.1)}
+              className="absolute top-0 right-0 inline-flex h-full animate-scene-swap-in items-center gap-1 rounded-full bg-blue px-2.5 text-white opacity-0"
+            >
+              <Check className="size-3" strokeWidth={3} />
+              Approved
+            </span>
+          </span>
+        </div>
+        <span className="font-mono text-sub">purchase-order</span>
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden rounded-sm border border-line p-3">
           <Line />
           <Mark turn={2.9}>Packaging</Mark>
@@ -284,9 +321,6 @@ export function ControlScene() {
           <Mark turn={3.3}>₹0.8 L</Mark>
         </div>
         <div className="flex items-center gap-2">
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-navy text-white">
-            <UserRound className="size-4" />
-          </span>
           <span
             style={at(3.9)}
             className="relative inline-flex h-8 flex-1 animate-scene-press items-center justify-center gap-1 rounded-sm bg-blue text-sub font-semibold text-white"
