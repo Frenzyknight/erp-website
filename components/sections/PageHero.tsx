@@ -49,6 +49,8 @@ export function PageHero({
         {/* Positioned on phones, so the artwork fills this block; from "lg" the artwork fills the section's left side instead. */}
         <div className="relative flex min-h-[26rem] flex-col justify-end px-page pt-[calc(var(--header-h)+3rem)] pb-10 lg:static lg:min-h-0 lg:pb-12">
           <HeroArt className="absolute top-0 left-0 size-full lg:w-[56%]" />
+          {/* On phones the headline runs across the bright folds, so they are dimmed behind it. */}
+          <span aria-hidden className="absolute inset-0 bg-linear-to-r from-navy/90 via-navy/60 to-navy/10 lg:hidden" />
           <div className="relative flex flex-col gap-5 lg:gap-7">
             <Reveal>
               <Eyebrow onDark>{label}</Eyebrow>
@@ -100,7 +102,7 @@ export function PageHero({
       )}
 
       {/* A band of dots closes the hero; the first sheet rides up over its foot. */}
-      <div aria-hidden className="relative h-14 dot-grid md:h-24" />
+      <div aria-hidden className="relative h-14 dot-grid md:h-20" />
     </section>
   );
 }

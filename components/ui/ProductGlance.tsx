@@ -162,7 +162,7 @@ export function ChatGlance({ className = "", short = false }: { className?: stri
 /** Both products together: the ERP window behind, the phone in front and drifting slowly. */
 export function ProductPair() {
   return (
-    <div className="relative aspect-[10/9] w-full sm:aspect-[10/7.6]">
+    <div className="relative aspect-[10/9] w-full sm:aspect-[10/9]">
       <span aria-hidden className="absolute bottom-[8%] right-[2%] size-[52%] rounded-full bg-blue/30 blur-3xl" />
       <div className="absolute left-0 top-0 w-[86%] sm:w-[80%]">
         <GlanceTag>Custom ERP</GlanceTag>
