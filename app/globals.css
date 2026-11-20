@@ -117,12 +117,18 @@
   --animate-scene-regrow: scene-regrow 8s var(--ease-swift) infinite both;
   --animate-scene-rise: scene-rise 8s var(--ease-swift) infinite both;
   --animate-scene-turn: scene-turn 8s var(--ease-swift) infinite both;
+  --animate-scene-march: scene-march 0.7s linear infinite;
   --animate-scene-travel: scene-travel 8s ease-in-out infinite both;
+  --animate-scene-arrive: scene-arrive 8s var(--ease-swift) infinite both;
   --animate-scene-wipe: scene-wipe 8s ease-out infinite both;
   --animate-scene-press: scene-press 8s ease infinite both;
   --animate-scene-ripple: scene-ripple 8s ease-out infinite both;
   --animate-scene-swap-out: scene-swap-out 8s ease infinite both;
   --animate-scene-swap-in: scene-swap-in 8s var(--ease-swift) infinite both;
+  --animate-scene-flash: scene-flash 8s ease-out infinite both;
+  --animate-scene-scan: scene-scan 8s linear infinite both;
+  --animate-scene-select: scene-select 8s var(--ease-swift) infinite both;
+  --animate-scene-beam: scene-beam 8s ease-out infinite both;
 
   /* The track holds the wordmark four times, so half its width is exactly two copies. */
   @keyframes marquee {
@@ -164,6 +170,18 @@
     }
     3%,
     8% {
+      box-shadow: inset 0 0 0 999px var(--glow, color-mix(in srgb, var(--color-blue) 22%, transparent));
+    }
+  }
+  /* The same wash, but brief: for something a moving line passes over. */
+  @keyframes scene-flash {
+    0%,
+    7%,
+    100% {
+      box-shadow: inset 0 0 0 999px transparent;
+    }
+    1.5%,
+    3% {
       box-shadow: inset 0 0 0 999px var(--glow, color-mix(in srgb, var(--color-blue) 22%, transparent));
     }
   }
@@ -239,20 +257,51 @@
       transform: rotate(90deg);
     }
   }
-  /* A dot crossing an arrow from its tail to its head, fading in and out at the ends. */
+  /*
+   * An arrow, in three parts. Its dashes drift towards the head all the time,
+   * one dash and gap per loop so the repeat never shows. On its turn a streak
+   * runs from behind the tail to the head, and as it lands the head kicks forward
+   * and takes the accent colour for a moment.
+   */
+  @keyframes scene-march {
+    from {
+      transform: translateX(calc(var(--spacing) * -1.5));
+    }
+    to {
+      transform: none;
+    }
+  }
   @keyframes scene-travel {
     0% {
-      left: 0;
+      left: calc(var(--spacing) * -6);
       opacity: 0;
     }
-    2%,
-    9% {
+    1.5%,
+    10% {
       opacity: 1;
     }
-    11%,
+    12%,
     100% {
       left: 100%;
       opacity: 0;
+    }
+  }
+  @keyframes scene-arrive {
+    0%,
+    9%,
+    30%,
+    100% {
+      color: var(--color-mist);
+      transform: none;
+    }
+    12% {
+      color: var(--color-blue);
+      transform: translateX(25%) scale(1.2);
+    }
+    18%,
+    22% {
+      color: var(--color-blue);
+      transform: none;
     }
   }
   /* Blinks out, then is uncovered again from the left. Set --wipe-x: 0% and --wipe-y: 100% to uncover from the top. */
@@ -330,6 +379,74 @@
     45%,
     100% {
       opacity: 0;
+      transform: none;
+    }
+  }
+  /*
+   * A search, in three parts that follow one another. Unlike the moves above
+   * these are timed against the start of the loop, so they take no delay: the
+   * find and the beam clear away as the loop begins, and stay away while the
+   * scan line is out.
+   *
+   * First the scan line crosses its box from top to bottom, between 0.2s and 1.7s.
+   */
+  @keyframes scene-scan {
+    0%,
+    2.5% {
+      opacity: 0;
+      transform: none;
+    }
+    4.5%,
+    19% {
+      opacity: 1;
+    }
+    21%,
+    100% {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  /* Then the find is picked out, at 1.8s. */
+  @keyframes scene-select {
+    0% {
+      opacity: 1;
+      transform: none;
+    }
+    2% {
+      opacity: 0;
+      transform: none;
+    }
+    22% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    27%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Then the beam grows out of it, from 2.1s to 2.7s. Set the element's transform-origin to the point it grows from. */
+  @keyframes scene-beam {
+    0% {
+      opacity: 1;
+      transform: none;
+    }
+    2% {
+      opacity: 0;
+      transform: none;
+    }
+    2.1% {
+      opacity: 0;
+      transform: scale(0);
+    }
+    26% {
+      opacity: 1;
+      transform: scale(0);
+    }
+    34%,
+    100% {
+      opacity: 1;
       transform: none;
     }
   }
@@ -424,8 +541,15 @@
    */
   .scene {
     container-type: inline-size;
-    /* Off screen, the browser skips the picture and stops running its loop. Its size comes from its aspect ratio, so nothing shifts. */
-    content-visibility: auto;
+  }
+
+  /* The dashed shaft of an arrow in a picture: dashes and gaps of 0.75 units each, in the text colour. */
+  .scene-dashes {
+    background-image: repeating-linear-gradient(
+      90deg,
+      currentColor 0 calc(var(--spacing) * 0.75),
+      transparent 0 calc(var(--spacing) * 1.5)
+    );
   }
 
   .scene > * {
