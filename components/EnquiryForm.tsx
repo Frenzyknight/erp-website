@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { submitEnquiry, type EnquiryState } from "@/app/actions/enquiry";
-import { ButtonArrow, buttonClass } from "@/components/ui/Button";
+import { ButtonLabel, buttonClass } from "@/components/ui/Button";
 import { chipClass } from "@/components/ui/Chip";
 import { useBlueprint } from "@/lib/blueprint-store";
 import { estimateWeeks, summarise } from "@/lib/configurator";
@@ -20,7 +20,7 @@ const interests = [
 
 type FieldName = "name" | "company" | "phone" | "email" | "message";
 
-const labelClass = "mb-2 block text-label uppercase text-ink";
+const labelClass = "mb-2 block text-body font-medium text-ink";
 
 function Field({
   name,
@@ -50,9 +50,11 @@ function Field({
     defaultValue: state.values?.[name],
     "aria-invalid": !!error,
     "aria-describedby": error ? `${id}-error` : undefined,
-    // A solid box with a thick border. Focus is a sharp change of border colour, with no glow.
-    className: `block w-full border-2 bg-white px-4 py-3 text-body text-ink placeholder:text-muted transition-colors duration-150 ease-linear ${
-      error ? "border-red-600" : "border-ink focus:border-blue"
+    // A rounded outline that darkens on hover. Focus adds a second hairline in the same colour, with no glow.
+    className: `block w-full rounded-md border bg-transparent px-5 py-4 text-body text-ink outline-none placeholder:text-muted transition-[border-color,box-shadow] duration-200 ease-out ${
+      error
+        ? "border-red-700 focus:shadow-[0_0_0_1px_var(--color-red-700)]"
+        : "border-muted hover:border-navy focus:border-navy focus:shadow-[0_0_0_1px_var(--color-navy)]"
     }`,
   };
 
@@ -60,7 +62,7 @@ function Field({
     <div className={textarea ? "sm:col-span-2" : ""}>
       <label htmlFor={id} className={labelClass}>
         {label}
-        {optional && <span className="font-medium text-muted"> (optional)</span>}
+        {optional && <span className="font-normal text-muted"> (optional)</span>}
       </label>
       {textarea ? (
         <textarea rows={3} {...shared} />
@@ -68,7 +70,7 @@ function Field({
         <input type={type} required={!optional} autoComplete={autoComplete} {...shared} />
       )}
       {error && (
-        <p id={`${id}-error`} className="mt-2 text-small font-medium text-red-700">
+        <p id={`${id}-error`} className="mt-2 px-1 text-caption text-red-700">
           {error}
         </p>
       )}
@@ -93,41 +95,41 @@ export function EnquiryForm({
 
   if (state.status === "success") {
     return (
-      <div role="status" className="flex min-h-[26rem] flex-col items-start justify-center bg-white p-8 sm:p-12">
-        <span className="grid size-14 place-items-center bg-blue text-white">
-          <Check aria-hidden className="size-7" strokeWidth={3} />
+      <div role="status" className="flex min-h-[26rem] flex-col items-start justify-center p-6 sm:p-10">
+        <span className="grid size-14 place-items-center rounded-full bg-blue text-white">
+          <Check aria-hidden className="size-7" strokeWidth={2.5} />
         </span>
-        <h3 className="mt-8 text-heading uppercase text-ink">Thank you. We have your details.</h3>
-        <p className="mt-4 max-w-sm text-body text-slate">
+        <h3 className="mt-8 text-h4 text-navy">Thank you. We have your details.</h3>
+        <p className="mt-3 max-w-sm text-body text-muted">
           We will be in touch shortly. To speed things up, message us on WhatsApp.
         </p>
         <a
           href={whatsappLink("Hi Polaris, I just sent an enquiry from your website.")}
           target="_blank"
           rel="noopener noreferrer"
-          className={buttonClass("secondary", "mt-8 w-full sm:w-auto")}
+          className={buttonClass("outline", "mt-8 w-full sm:w-auto")}
         >
-          Continue on WhatsApp
+          <ButtonLabel>Continue on WhatsApp</ButtonLabel>
         </a>
       </div>
     );
   }
 
   return (
-    <form action={formAction} noValidate className="relative bg-white p-6 sm:p-10">
-      <h3 className="border-b-4 border-ink pb-5 text-title font-black uppercase text-ink">{title}</h3>
+    <form action={formAction} noValidate className="relative p-6 sm:p-10">
+      <h3 className="text-h4 text-navy">{title}</h3>
 
       {showBlueprint && (
-        <div className="mt-6 flex items-center justify-between gap-3 border-2 border-ink bg-tint py-2 pl-4 pr-2">
-          <p className="text-small text-ink">
-            <span className="font-bold">Your blueprint is attached:</span> {bp.modules.length}{" "}
+        <div className="mt-6 flex items-center justify-between gap-3 rounded-md bg-tint py-1.5 pl-4 pr-1.5">
+          <p className="text-caption text-ink">
+            <span className="font-semibold">Your blueprint is attached:</span> {bp.modules.length}{" "}
             {bp.modules.length === 1 ? "module" : "modules"}, about {estimateWeeks(bp)} weeks.
           </p>
           <button
             type="button"
             onClick={() => setDismissed(true)}
             aria-label="Remove blueprint from enquiry"
-            className="grid size-11 shrink-0 place-items-center text-ink transition-colors duration-150 ease-linear hover:bg-ink hover:text-white"
+            className="grid size-11 shrink-0 place-items-center rounded-sm text-ink transition-colors duration-200 ease-out hover:bg-white"
           >
             <X aria-hidden className="size-4" />
           </button>
@@ -145,10 +147,7 @@ export function EnquiryForm({
           <legend className={labelClass}>I am interested in</legend>
           <div className="flex flex-wrap gap-2" key={interest}>
             {interests.map((o) => (
-              <label
-                key={o.id}
-                className={chipClass}
-              >
+              <label key={o.id} className={chipClass}>
                 <input type="radio" name="interest" value={o.id} defaultChecked={interest === o.id} className="sr-only" />
                 {o.label}
               </label>
@@ -173,7 +172,7 @@ export function EnquiryForm({
       </div>
 
       {state.status === "error" && state.message && (
-        <p role="alert" className="mt-6 border-2 border-red-600 px-4 py-3 text-small font-medium text-red-700">
+        <p role="alert" className="mt-6 rounded-md bg-red-50 px-4 py-3 text-caption text-red-700">
           {state.message}
         </p>
       )}
@@ -185,13 +184,10 @@ export function EnquiryForm({
             Sending…
           </>
         ) : (
-          <>
-            {submitLabel}
-            <ButtonArrow />
-          </>
+          <ButtonLabel>{submitLabel}</ButtonLabel>
         )}
       </button>
-      <p className="mt-4 text-small text-muted">Your details are only used to respond to your enquiry.</p>
+      <p className="mt-4 text-center text-caption text-muted">Your details are only used to respond to your enquiry.</p>
     </form>
   );
 }

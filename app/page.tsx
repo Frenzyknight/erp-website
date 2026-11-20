@@ -1,27 +1,22 @@
-import { Eye, PiggyBank, ShieldCheck, Zap } from "lucide-react";
 import { Hero } from "@/components/sections/Hero";
+import { Offerings } from "@/components/sections/Offerings";
 import { Statement } from "@/components/sections/Statement";
-import { Benefits } from "@/components/sections/Benefits";
+import { ResultsBento } from "@/components/sections/ResultsBento";
 import { Process } from "@/components/sections/Process";
 import { Configurator } from "@/components/configurator/Configurator";
 import { CrmShowcase } from "@/components/sections/CrmShowcase";
 import { Consulting } from "@/components/sections/Consulting";
 import { Contact } from "@/components/sections/Contact";
-import { crm, erpBenefits, statements } from "@/lib/content";
+import { crm, statements } from "@/lib/content";
 
-const benefitIcons = [PiggyBank, Zap, ShieldCheck, Eye];
-
+/* Both products are introduced first; the ERP story follows, then the CRM agent, then consulting. */
 export default function HomePage() {
   return (
     <>
       <Hero />
+      <Offerings />
       <Statement label="The problem" text={statements.home} />
-      <Benefits
-        id="benefits-title"
-        label="The result"
-        title="What changes when the software fits."
-        items={erpBenefits.map((b, i) => ({ ...b, icon: benefitIcons[i] }))}
-      />
+      <ResultsBento id="benefits-title" title="What changes when the software fits." />
       <Process />
       <Configurator />
       <CrmShowcase
@@ -32,7 +27,7 @@ export default function HomePage() {
         cta={{ href: "/crm-agent", label: "See how the agent works" }}
       />
       <Consulting />
-      <Contact />
+      <Contact title="Ready for software that fits the way you work?" />
     </>
   );
 }

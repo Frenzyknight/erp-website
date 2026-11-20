@@ -1,8 +1,9 @@
 import type { LucideIcon } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/Section";
+import { StripCard } from "@/components/ui/StripCard";
 import { Reveal } from "@/components/motion/Reveal";
 
-/** Four cells that share their borders. Each one inverts to blue on hover. */
+/** Four outcomes, one card each, rising in one after another. */
 export function Benefits({
   id,
   label,
@@ -17,33 +18,25 @@ export function Benefits({
   tone?: "white" | "surface";
 }) {
   return (
-    <Section tone={tone} pattern="dots" labelledBy={id}>
+    <Section tone={tone} labelledBy={id}>
       <SectionHeader id={id} label={label} title={title} />
-      <Reveal delay={0.05}>
-        <ul className="mt-14 grid border-l-4 border-t-4 border-ink sm:grid-cols-2 lg:grid-cols-4">
-          {items.map(({ icon: Icon, title, body }, i) => (
-            <li
-              key={title}
-              className="group border-b-4 border-r-4 border-ink bg-white p-8 transition-colors duration-150 ease-linear hover:bg-blue"
-            >
-              <div className="flex items-start justify-between">
-                <span className="grid size-12 place-items-center border-2 border-ink text-ink transition-colors duration-150 ease-linear group-hover:border-white group-hover:text-white">
-                  <Icon aria-hidden className="size-5" strokeWidth={2} />
-                </span>
-                <span aria-hidden className="text-label text-blue transition-colors duration-150 ease-linear group-hover:text-white">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h3 className="mt-12 text-title font-bold uppercase text-ink transition-colors duration-150 ease-linear group-hover:text-white">
-                {title}
-              </h3>
-              <p className="mt-3 text-body text-slate transition-colors duration-150 ease-linear group-hover:text-white">
-                {body}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
+      <ul className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-6 xl:grid-cols-4">
+        {items.map(({ icon: Icon, title, body }, i) => (
+          <li key={title}>
+            <Reveal delay={i * 0.09} className="h-full">
+              <StripCard
+                index={i}
+                onSurface={tone === "surface"}
+                icon={<Icon aria-hidden className="size-7" strokeWidth={1.5} />}
+              >
+                <h3 className="mt-10 text-body font-semibold text-ink">{title}</h3>
+                <span aria-hidden className="my-4 h-px w-full bg-line" />
+                <p className="text-caption text-muted">{body}</p>
+              </StripCard>
+            </Reveal>
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }

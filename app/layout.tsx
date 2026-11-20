@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { company } from "@/lib/content";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
@@ -61,7 +61,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} antialiased`}>
+    <html lang="en" className={`${geist.variable} antialiased`}>
       <body className="min-h-dvh overflow-x-clip">
         <script
           type="application/ld+json"
@@ -71,16 +71,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-blue focus:px-5 focus:py-3 focus:text-label focus:uppercase focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-navy focus:px-6 focus:py-3 focus:text-body focus:font-semibold focus:text-white"
         >
           Skip to content
         </a>
         <SmoothScroll>
           <Nav />
-          {/* The top padding clears the fixed navigation bar (4rem plus its 4px border). */}
-          <main id="main" className="pt-17">
-            {children}
-          </main>
+          <main id="main">{children}</main>
           <Footer />
         </SmoothScroll>
       </body>

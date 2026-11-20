@@ -7,6 +7,7 @@ import { Benefits } from "@/components/sections/Benefits";
 import { Investment } from "@/components/sections/Investment";
 import { Configurator } from "@/components/configurator/Configurator";
 import { Contact } from "@/components/sections/Contact";
+import { ErpGlance } from "@/components/ui/ProductGlance";
 import { erpBenefits, statements } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function CustomErpPage() {
         body="We fix the process first, then build only the modules your business runs on."
         primary={{ href: "#build", label: "Build your ERP" }}
         secondary={{ href: "#contact", label: "Book a free process review" }}
+        media={<ErpGlance className="w-[min(88%,34rem)]" />}
       />
       <Statement label="The problem" text={statements.erp} />
       <ModulesGrid />
@@ -34,6 +36,7 @@ export default function CustomErpPage() {
         label="The result"
         title="What a custom ERP changes for you."
         items={erpBenefits.map((b, i) => ({ ...b, icon: benefitIcons[i] }))}
+        tone="surface"
       />
       <Investment />
       <Configurator />

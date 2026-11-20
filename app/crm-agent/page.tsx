@@ -7,6 +7,7 @@ import { CrmWorkflow } from "@/components/sections/crm/CrmWorkflow";
 import { Benefits } from "@/components/sections/Benefits";
 import { CrmRollout } from "@/components/sections/crm/CrmRollout";
 import { Contact } from "@/components/sections/Contact";
+import { ChatGlance } from "@/components/ui/ProductGlance";
 import { crm } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function CrmAgentPage() {
         body="Our agent connects to your billing software and keeps the conversation going on WhatsApp: automatically, personally and on time."
         primary={{ href: "#contact", label: "Get a demo" }}
         secondary={{ href: "#how-it-works", label: "See how it works" }}
+        media={<ChatGlance className="w-[min(68%,20rem)]" />}
       />
       <CrmCompare />
       <CrmShowcase
@@ -40,7 +42,6 @@ export default function CrmAgentPage() {
         label="The result"
         title="What your business gains."
         items={crm.gains.map((g, i) => ({ ...g, icon: gainIcons[i] }))}
-        tone="surface"
       />
       <CrmRollout />
       <Contact

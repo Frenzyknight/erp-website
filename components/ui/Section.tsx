@@ -1,48 +1,56 @@
 import { Reveal } from "@/components/motion/Reveal";
+import { SplitText } from "@/components/motion/SplitText";
 
-type Tone = "white" | "surface" | "navy";
-type Pattern = "grid" | "dots" | "diagonal";
+type Tone = "white" | "surface" | "line" | "navy";
 
-const patterns: Record<Pattern, string> = {
-  grid: "swiss-grid-pattern",
-  dots: "swiss-dots",
-  diagonal: "swiss-diagonal",
+const fills: Record<Tone, string> = {
+  white: "bg-white",
+  surface: "bg-surface",
+  line: "bg-line",
+  navy: "bg-navy",
 };
 
-/** Shared page gutter, so the navigation, every section and the footer sit on the same grid. */
-export const container = "mx-auto max-w-7xl px-6 lg:px-12";
+/** Shared page gutter, so the navigation, every section and the footer line up. */
+export const container = "w-full px-page";
 
-/** A full-width band closed by a thick rule. "surface" bands carry a texture; white and navy never do. */
+/**
+ * A full-width band. Bands are told apart by their fill alone: there are no
+ * rules between them. "lifted" rounds the top corners and pulls the band up
+ * over the one before it, which is how a navy band enters the page.
+ */
 export function Section({
   id,
   tone = "white",
-  pattern = "grid",
+  pattern = false,
+  lifted = false,
   labelledBy,
   className = "",
   children,
 }: {
   id?: string;
   tone?: Tone;
-  pattern?: Pattern;
+  /** Tiles the faint star mark behind the content. For "surface" bands. */
+  pattern?: boolean;
+  lifted?: boolean;
   labelledBy?: string;
   className?: string;
   children: React.ReactNode;
 }) {
-  const fill = tone === "navy" ? "bg-navy" : tone === "surface" ? `bg-surface ${patterns[pattern]}` : "";
-
   return (
     <section
       id={id}
       aria-labelledby={labelledBy}
-      className={`border-b-4 border-ink py-20 sm:py-28 ${fill} ${className}`}
+      className={`py-16 md:py-20 lg:py-30 ${fills[tone]} ${pattern ? "mark-pattern" : ""} ${
+        lifted ? "relative -mt-8 rounded-t-2xl md:-mt-10 md:rounded-t-3xl" : ""
+      } ${className}`}
     >
       <div className={container}>{children}</div>
     </section>
   );
 }
 
-/** The numbered label that opens a section. The number comes from a CSS counter, so it follows page order. */
-export function SectionLabel({
+/** The small pill that names a section or a product. Outlined on navy and blue, filled with the accent elsewhere. */
+export function Eyebrow({
   children,
   onDark = false,
   className = "",
@@ -52,57 +60,53 @@ export function SectionLabel({
   className?: string;
 }) {
   return (
-    <p className={`section-label text-label uppercase ${onDark ? "text-sky" : "text-blue"} ${className}`}>
+    <p
+      className={`inline-flex items-center rounded-full font-semibold ${
+        onDark ? "border border-white px-5 py-[7px] text-sub text-white" : "bg-blue px-4 py-1.5 text-caption text-white"
+      } ${className}`}
+    >
       {children}
     </p>
   );
 }
 
 /**
- * "split" sets the title across eight columns with the supporting line in the
- * remaining four. "stacked" is for headers that sit inside a narrower column.
+ * The heading of a section: an optional pill, the title, and an optional
+ * supporting line in the large muted size. Centred headers sit above
+ * symmetrical content; left-aligned ones above grids and lists.
  */
 export function SectionHeader({
   id,
   label,
   title,
   body,
-  layout = "split",
+  align = "left",
   onDark = false,
 }: {
   id?: string;
   label?: string;
   title: string;
   body?: string;
-  layout?: "split" | "stacked";
+  align?: "left" | "center";
   onDark?: boolean;
 }) {
-  const split = layout === "split";
+  const centered = align === "center";
 
   return (
-    <Reveal className={split ? "grid gap-x-12 gap-y-6 lg:grid-cols-12 lg:items-end" : ""}>
-      <div className={split ? "lg:col-span-8" : ""}>
-        {label && (
-          <SectionLabel onDark={onDark} className="mb-5">
-            {label}
-          </SectionLabel>
-        )}
-        <h2
-          id={id}
-          className={`text-heading uppercase ${split ? "text-balance" : ""} ${onDark ? "text-white" : "text-ink"}`}
-        >
-          {title}
-        </h2>
-      </div>
-      {body && (
-        <p
-          className={`max-w-md text-pretty text-title ${split ? "lg:col-span-4" : "mt-6"} ${
-            onDark ? "text-mist" : "text-slate"
-          }`}
-        >
-          {body}
-        </p>
+    <div className={`flex flex-col gap-4 md:gap-6 ${centered ? "items-center text-center" : "items-start"}`}>
+      {label && (
+        <Reveal>
+          <Eyebrow onDark={onDark}>{label}</Eyebrow>
+        </Reveal>
       )}
-    </Reveal>
+      <h2 id={id} className={`max-w-5xl text-h2 text-balance ${onDark ? "text-white" : "text-navy"}`}>
+        <SplitText text={title} />
+      </h2>
+      {body && (
+        <Reveal delay={0.1}>
+          <p className={`max-w-[45rem] text-lead text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>{body}</p>
+        </Reveal>
+      )}
+    </div>
   );
 }

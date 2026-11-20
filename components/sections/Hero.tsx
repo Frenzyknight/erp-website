@@ -1,40 +1,27 @@
-import { PageHero } from "@/components/sections/PageHero";
-import { container } from "@/components/ui/Section";
-import { DashboardPreview } from "@/components/configurator/DashboardPreview";
-import { company } from "@/lib/content";
-import { defaultBlueprint } from "@/lib/configurator";
+import { BadgeCheck, Blocks, CalendarClock, Receipt } from "lucide-react";
+import { PageHero, type HeroFact } from "@/components/sections/PageHero";
+import { ProductPair } from "@/components/ui/ProductGlance";
 
+/* Two facts for each product: the ERP first, then the CRM agent. */
+const facts: HeroFact[] = [
+  { icon: CalendarClock, title: "Live in about 3 months", body: "From kick-off to an ERP your team can use" },
+  { icon: Blocks, title: "Only the modules you need", body: "For less than a standard ERP" },
+  { icon: BadgeCheck, title: "Official WhatsApp Business API", body: "Approved message templates" },
+  { icon: Receipt, title: "Works with your billing software", body: "Uses the customer data you already have" },
+];
+
+/** The homepage opening. It introduces both products at once, and each action leads to one of them. */
 export function Hero() {
   return (
     <PageHero
-      size="mega"
-      label={company.tagline}
-      title={
-        <>
-          ERP software that <span className="text-blue">fits</span> the way you work.
-        </>
-      }
-      body="We map how your business actually runs, fix the process, then build only the modules you need."
-      primary={{ href: "#build", label: "Build your ERP" }}
-      secondary={{ href: "#contact", label: "Book a free process review" }}
-      note="Live in about 3 months, for less than a standard ERP."
-    >
-      {/* The product preview sits flat on a gridded band, in front of a composition of plain shapes. */}
-      <div className="overflow-hidden border-t-4 border-ink bg-surface swiss-grid-pattern">
-        <div className={`${container} py-12 lg:py-20`}>
-          <div className="relative lg:px-12">
-            <div aria-hidden className="hidden lg:block">
-              <span className="absolute -top-10 right-0 size-40 rounded-full bg-blue shadow-[0_0_0_10px_rgb(43_92_240/0.12)]" />
-              <span className="absolute -bottom-10 left-0 size-32 bg-ink" />
-              <span className="absolute -bottom-10 left-40 h-1 w-48 bg-ink" />
-              <span className="absolute -top-10 right-48 size-16 border-4 border-ink bg-white swiss-diagonal" />
-            </div>
-            <div className="relative">
-              <DashboardPreview modules={defaultBlueprint.modules} size={defaultBlueprint.size} mobileLimit={3} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </PageHero>
+      label="Custom ERP + Post-Sales CRM Agent"
+      title="Software that fits your business, and keeps customers coming back."
+      body="We build custom ERP around the way your teams actually work, and a WhatsApp agent that follows up after every sale."
+      primary={{ href: "/custom-erp", label: "Explore Custom ERP" }}
+      secondary={{ href: "/crm-agent", label: "Explore the CRM Agent" }}
+      media={<ProductPair />}
+      factsTitle="Built around the way your business already runs"
+      facts={facts}
+    />
   );
 }

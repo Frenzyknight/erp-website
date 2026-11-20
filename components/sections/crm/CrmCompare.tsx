@@ -1,51 +1,56 @@
-import { Check, X } from "lucide-react";
+import { CircleCheck, CircleX } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { crm } from "@/lib/content";
 
-/** Two panels sharing one rule: today on textured grey, the opportunity inverted to navy. */
+const card = "flex h-full flex-col gap-5 rounded-md p-6 md:rounded-lg md:p-8";
+
+/** Two cards side by side: today on the quiet surface, the opportunity on navy. The navy one grows a little on hover. */
 export function CrmCompare() {
   return (
-    <Section labelledBy="crm-compare-title">
+    <Section tone="line" labelledBy="crm-compare-title">
       <SectionHeader
         id="crm-compare-title"
         label="Where you are today"
         title="Your billing software works. What happens after the bill does not."
         body="Customer data and billing already run well. Post-sales engagement on WhatsApp is still manual, untracked and easy to forget."
+        align="center"
       />
 
-      <Reveal delay={0.05} className="mt-14 grid border-4 border-ink md:grid-cols-2">
-        <div className="border-b-4 border-ink bg-surface p-8 swiss-diagonal md:border-b-0 md:border-r-4 lg:p-12">
-          <h3 className="text-title font-black uppercase text-ink">Today</h3>
-          <ul className="mt-8 space-y-6">
-            {crm.today.map((t) => (
-              <li key={t.title} className="flex gap-4">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center border-2 border-ink bg-white text-ink">
-                  <X aria-hidden className="size-3.5" strokeWidth={3} />
-                </span>
-                <div>
-                  <p className="text-body font-bold text-ink">{t.title}</p>
-                  <p className="mt-1 text-body text-slate">{t.body}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="mx-auto mt-8 grid max-w-[1040px] gap-4 md:mt-12 md:grid-cols-2 md:gap-6">
+        <Reveal className="h-full">
+          <div className={`${card} bg-surface`}>
+            <h3 className="text-h5 text-navy">Today</h3>
+            <span aria-hidden className="h-px w-full bg-line" />
+            <ul className="space-y-4">
+              {crm.today.map((t) => (
+                <li key={t.title} className="flex gap-3">
+                  <CircleX aria-hidden className="size-5 shrink-0 text-muted" />
+                  <div>
+                    <p className="text-body font-semibold text-ink">{t.title}</p>
+                    <p className="mt-1.5 text-body text-muted">{t.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
 
-        <div className="bg-navy p-8 lg:p-12">
-          <h3 className="text-title font-black uppercase text-white">The opportunity</h3>
-          <ul className="mt-8 space-y-6">
-            {crm.opportunity.map((o) => (
-              <li key={o} className="flex gap-4">
-                <span className="mt-0.5 grid size-6 shrink-0 place-items-center bg-blue text-white">
-                  <Check aria-hidden className="size-4" strokeWidth={3} />
-                </span>
-                <p className="text-body font-medium text-white">{o}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Reveal>
+        <Reveal delay={0.09} className="h-full">
+          <div className={`${card} bg-navy transition-transform duration-1000 ease-rise lg:hover:scale-[1.04]`}>
+            <h3 className="text-h5 text-white">The opportunity</h3>
+            <span aria-hidden className="h-px w-full bg-white/60" />
+            <ul className="space-y-4">
+              {crm.opportunity.map((o) => (
+                <li key={o} className="flex gap-3">
+                  <CircleCheck aria-hidden className="size-5 shrink-0 text-sky" />
+                  <p className="text-body text-white">{o}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
+      </div>
     </Section>
   );
 }

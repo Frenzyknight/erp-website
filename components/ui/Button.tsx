@@ -1,35 +1,40 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
-type Variant = "primary" | "secondary" | "onDark";
-type Size = "md" | "sm";
+type Variant = "primary" | "outline" | "light" | "ghost" | "accent";
+type Size = "md" | "sm" | "lg";
 
-/* Rectangular, uppercase, and the colours snap on hover: no fades, no scaling. */
+/* Rounded, sentence case, and the fill changes to the accent on hover while the label wipes upwards. */
 const base =
-  "group inline-flex items-center justify-center gap-3 border-2 text-center text-small font-bold uppercase tracking-wider transition-colors duration-150 ease-linear disabled:pointer-events-none disabled:opacity-50";
+  "btn-wipe inline-flex items-center justify-center gap-2 rounded-md border text-center text-body font-semibold leading-6 whitespace-nowrap transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-60";
 
+/* Heights include the 1px border: 48px, 36px, and 48px growing to 82px for the footer pair. */
 const sizes: Record<Size, string> = {
-  md: "min-h-14 px-7 py-3",
-  sm: "min-h-11 px-5 py-2",
+  md: "min-h-12 px-6 py-[11px]",
+  sm: "min-h-9 px-5 py-[5px]",
+  lg: "min-h-12 px-6 py-[11px] md:rounded-xl md:px-[54px] md:py-5 md:text-cta",
 };
 
+/* "light" and "ghost" are for navy and blue backgrounds, where the hover fill is sky. */
 const variants: Record<Variant, string> = {
-  primary: "border-blue bg-blue text-white hover:border-ink hover:bg-ink",
-  secondary: "border-ink bg-white text-ink hover:bg-ink hover:text-white",
-  onDark: "border-white text-white hover:bg-white hover:text-ink focus-visible:outline-sky",
+  primary: "border-navy bg-navy text-white hover:border-blue hover:bg-blue",
+  outline: "border-navy bg-white text-navy hover:border-blue hover:bg-blue hover:text-white",
+  light: "border-white bg-white text-navy hover:border-sky hover:bg-sky focus-visible:outline-white",
+  ghost:
+    "border-white bg-transparent text-white hover:border-sky hover:bg-sky hover:text-navy focus-visible:outline-white",
+  accent: "border-blue bg-blue text-white hover:border-blue-deep hover:bg-blue-deep",
 };
 
 export function buttonClass(variant: Variant = "primary", className = "", size: Size = "md") {
   return `${base} ${sizes[size]} ${variants[variant]} ${className}`;
 }
 
-export function ButtonArrow() {
+/** Wraps a plain text label in the two layers the hover wipe needs. Anything else passes through. */
+export function ButtonLabel({ children }: { children: React.ReactNode }) {
+  if (typeof children !== "string") return <>{children}</>;
   return (
-    <ArrowRight
-      aria-hidden
-      strokeWidth={2.5}
-      className="size-4 shrink-0 transition-transform duration-150 ease-linear group-hover:translate-x-1"
-    />
+    <span className="btn-label" data-label={children}>
+      <span className="btn-text">{children}</span>
+    </span>
   );
 }
 
@@ -38,7 +43,6 @@ export function ButtonLink({
   children,
   variant = "primary",
   size = "md",
-  arrow = false,
   className = "",
   external = false,
 }: {
@@ -46,16 +50,10 @@ export function ButtonLink({
   children: React.ReactNode;
   variant?: Variant;
   size?: Size;
-  arrow?: boolean;
   className?: string;
   external?: boolean;
 }) {
-  const content = (
-    <>
-      {children}
-      {arrow && <ButtonArrow />}
-    </>
-  );
+  const content = <ButtonLabel>{children}</ButtonLabel>;
 
   if (external) {
     return (

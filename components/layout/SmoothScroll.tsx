@@ -14,8 +14,9 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
         options={{
           lerp: 0.11,
           smoothWheel: !reduce,
-          // Lands sections flush under the fixed navigation bar (4rem plus its 4px border).
-          anchors: { offset: -68, immediate: reduce },
+          // No offset here: the stylesheet's scroll-margin on [id] already clears the
+          // navigation bar, and the scroller honours it, so adding one would double it.
+          anchors: { immediate: reduce },
         }}
       >
         {children}

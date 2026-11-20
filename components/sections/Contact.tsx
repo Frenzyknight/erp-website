@@ -1,10 +1,11 @@
 import { ArrowRight, Mail, MessageCircle, Phone, type LucideIcon } from "lucide-react";
-import { Section, SectionHeader } from "@/components/ui/Section";
+import { Eyebrow, Section } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
+import { SplitText } from "@/components/motion/SplitText";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { company, whatsappLink } from "@/lib/content";
 
-/** A ruled row that inverts to white on hover, while its arrow turns from diagonal to level. */
+/** A row that lightens on hover, while its arrow turns from diagonal to level. */
 function ContactLink({
   href,
   icon: Icon,
@@ -20,27 +21,23 @@ function ContactLink({
     <a
       href={href}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="group flex items-center gap-4 border-t-2 border-white px-3 py-5 text-white transition-colors duration-150 ease-linear hover:bg-white hover:text-ink focus-visible:outline-sky sm:px-4"
+      className="group flex items-center gap-4 rounded-md px-3 py-3 text-white transition-colors duration-200 ease-out hover:bg-white/15 focus-visible:outline-white"
     >
-      <span className="grid size-11 shrink-0 place-items-center border-2 border-current">
-        <Icon aria-hidden className="size-5" strokeWidth={2} />
+      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/15">
+        <Icon aria-hidden className="size-5" strokeWidth={1.75} />
       </span>
-      {/*
-        Sized so the email address stays on one line where the row is narrow: on phones, and in the
-        five-column layout between "lg" and "xl". It may still break anywhere on the narrowest screens.
-      */}
-      <span className="min-w-0 flex-1 text-small font-bold wrap-anywhere sm:text-body lg:text-small xl:text-body">
-        {children}
-      </span>
+      {/* The email address may break anywhere where the column is narrow. */}
+      <span className="min-w-0 flex-1 text-body font-semibold wrap-anywhere">{children}</span>
       <ArrowRight
         aria-hidden
-        strokeWidth={2.5}
-        className="hidden size-5 shrink-0 -rotate-45 transition-transform duration-200 ease-out group-hover:rotate-0 sm:block lg:hidden xl:block"
+        strokeWidth={2}
+        className="hidden size-5 shrink-0 -rotate-45 transition-transform duration-300 ease-swift group-hover:rotate-0 sm:block"
       />
     </a>
   );
 }
 
+/** The one panel in the accent colour: the invitation and the direct lines on blue, the form on a white card. */
 export function Contact({
   title = "Ready for an ERP that fits the way you work?",
   body = "Let us understand your business first. Tell us a little about it and we will set up a free process review.",
@@ -55,37 +52,45 @@ export function Contact({
   submitLabel?: string;
 }) {
   return (
-    <Section id="contact" tone="navy" labelledBy="contact-title">
-      <SectionHeader id="contact-title" label="Contact" title={title} body={body} onDark />
+    <Section id="contact" labelledBy="contact-title">
+      <div className="grid gap-2 rounded-md bg-blue p-2 md:rounded-lg md:p-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-4">
+        <div className="flex flex-col items-start gap-6 px-4 py-8 md:p-8 lg:gap-8">
+          <Eyebrow onDark>Contact</Eyebrow>
+          <h2 id="contact-title" className="text-h2 text-balance text-white">
+            <SplitText text={title} />
+          </h2>
+          <Reveal>
+            <p className="text-md text-pretty text-white/90 lg:text-lead">{body}</p>
+          </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 gap-x-12 gap-y-12 lg:grid-cols-12">
-        <Reveal className="lg:col-span-5">
-          <ul className="border-b-2 border-white">
-            <li>
-              <ContactLink
-                href={whatsappLink("Hi Polaris, I'd like a free process review for my business.")}
-                icon={MessageCircle}
-                external
-              >
-                <span className="uppercase tracking-wide">Chat on WhatsApp</span>
-              </ContactLink>
-            </li>
-            <li>
-              <ContactLink href={`tel:+${company.phoneE164}`} icon={Phone}>
-                {company.phoneDisplay}
-              </ContactLink>
-            </li>
-            <li>
-              <ContactLink href={`mailto:${company.email}`} icon={Mail}>
-                {company.email}
-              </ContactLink>
-            </li>
-          </ul>
-        </Reveal>
+          <Reveal delay={0.09} className="mt-auto w-full">
+            <ul className="-mx-3">
+              <li>
+                <ContactLink
+                  href={whatsappLink("Hi Polaris, I'd like a free process review for my business.")}
+                  icon={MessageCircle}
+                  external
+                >
+                  Chat on WhatsApp
+                </ContactLink>
+              </li>
+              <li>
+                <ContactLink href={`tel:+${company.phoneE164}`} icon={Phone}>
+                  {company.phoneDisplay}
+                </ContactLink>
+              </li>
+              <li>
+                <ContactLink href={`mailto:${company.email}`} icon={Mail}>
+                  {company.email}
+                </ContactLink>
+              </li>
+            </ul>
+          </Reveal>
+        </div>
 
-        <Reveal delay={0.05} className="lg:col-span-7">
+        <div className="rounded-sm bg-white md:rounded-md">
           <EnquiryForm defaultInterest={defaultInterest} title={formTitle} submitLabel={submitLabel} />
-        </Reveal>
+        </div>
       </div>
     </Section>
   );
