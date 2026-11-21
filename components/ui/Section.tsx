@@ -88,7 +88,7 @@ export function SectionHeader({
   /** A phrase from the title to set in the accent colour. */
   accent?: string;
   body?: string;
-  align?: "split" | "left" | "center";
+  align?: "split" | "left" | "center" | "side";
   size?: "h2" | "h3";
   onDark?: boolean;
 }) {
@@ -120,6 +120,22 @@ export function SectionHeader({
           )}
         </div>
         <div className="lg:col-span-6 lg:col-start-7">{heading}</div>
+      </div>
+    );
+  }
+
+  if (align === "side") {
+    return (
+      <div className={`${columns} lg:items-end`}>
+        <div className="flex flex-col gap-5 md:gap-6 lg:col-span-7">
+          {eyebrow}
+          {heading}
+        </div>
+        {body && (
+          <Reveal delay={0.1} className="lg:col-span-4 lg:col-start-9">
+            <p className={`max-w-[26rem] text-lead text-pretty ${onDark ? "text-white/70" : "text-muted"}`}>{body}</p>
+          </Reveal>
+        )}
       </div>
     );
   }

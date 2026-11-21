@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Hanken_Grotesk, Inter } from "next/font/google";
+import { Covered_By_Your_Grace, Geist_Mono, Hanken_Grotesk, Inter } from "next/font/google";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
@@ -23,6 +23,14 @@ const sans = Inter({
 const mono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+/* The handwriting. It is only used for a few words well below the fold, so it is not preloaded. */
+const scribble = Covered_By_Your_Grace({
+  variable: "--font-grace",
+  weight: "400",
+  subsets: ["latin"],
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -75,7 +83,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable} antialiased`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable} ${scribble.variable} antialiased`}>
       <body className="min-h-dvh overflow-x-clip">
         <script
           type="application/ld+json"

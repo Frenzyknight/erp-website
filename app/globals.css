@@ -28,7 +28,9 @@
   /*
    * Three families. "display" sets every heading, light and large. "sans" is
    * the reading face. "mono" is for the small capital labels: buttons, the
-   * navigation, section names and figures' captions.
+   * navigation, section names and figures' captions. "scribble" is not a
+   * fourth voice: it is the handwriting for the one phrase a statement has
+   * written in by hand.
    */
   --font-display:
     var(--font-hanken), ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -36,6 +38,7 @@
     var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-scribble: var(--font-grace), "Bradley Hand", "Segoe Print", cursive;
 
   /* Radius scale. Corners are tight: 4 for controls inside a panel, 7 for buttons and fields, 10 for cards and panels. */
   --radius-*: initial;
@@ -106,7 +109,6 @@
   --ease-wipe: cubic-bezier(0.23, 1, 0.32, 1);
 
   --animate-marquee: marquee 48s linear infinite;
-  --animate-float: float 7s ease-in-out infinite alternate;
   --animate-pop: pop 0.7s var(--ease-rise) both;
   --animate-grow-x: grow-x 1.1s var(--ease-rise) both;
   --animate-grow-y: grow-y 1.1s var(--ease-rise) both;
@@ -142,14 +144,6 @@
   @keyframes marquee {
     to {
       transform: translateX(-50%);
-    }
-  }
-  @keyframes float {
-    from {
-      transform: translateY(6px);
-    }
-    to {
-      transform: translateY(-6px);
     }
   }
   @keyframes pop {
@@ -493,6 +487,12 @@
     --header-h: 4.5rem;
     /* The corner of a light sheet where it meets the navy canvas. */
     --sheet-r: 20px;
+    /* The stops of a fade from night to nothing, for wherever the hero's dark has to run into navy. */
+    --night-fade:
+      var(--color-night), color-mix(in srgb, var(--color-night) 90%, transparent) 15%,
+      color-mix(in srgb, var(--color-night) 65%, transparent) 35%,
+      color-mix(in srgb, var(--color-night) 35%, transparent) 60%,
+      color-mix(in srgb, var(--color-night) 10%, transparent) 85%, transparent;
   }
 
   @media (min-width: 768px) {
@@ -583,6 +583,33 @@
   main > [data-tone="light"]:last-child {
     border-bottom-right-radius: var(--sheet-r);
     border-bottom-left-radius: var(--sheet-r);
+  }
+
+  /*
+   * Joins. A navy section straight after the hero has no sheet to cover where
+   * the two meet, and the picture is darker than navy, so the edge would show
+   * as a line. Instead the foot of the picture goes down to night, and the
+   * section starts at night and comes up to navy: one shade runs into the
+   * other. The fade is eased at both ends so neither end of it shows either.
+   */
+  .hero-foot {
+    display: none;
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 14rem;
+    pointer-events: none;
+    background-image: linear-gradient(to top, var(--night-fade));
+  }
+
+  main > [data-hero]:has(+ [data-tone="dark"]) > .hero-foot {
+    display: block;
+  }
+
+  main > [data-hero] + [data-tone="dark"] {
+    background-image: linear-gradient(to bottom, var(--night-fade));
+    background-size: 100% 26rem;
+    background-repeat: no-repeat;
   }
 
   /*

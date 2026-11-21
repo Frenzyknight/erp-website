@@ -18,7 +18,7 @@ export default function HomePage() {
     <>
       <Hero />
       <Offerings />
-      <Statement label="The problem" text={statements.home} />
+      <Statement label="The problem" text={statements.home} scribble="your process first" />
       <Results
         id="benefits-title"
         label="The result"

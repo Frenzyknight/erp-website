@@ -105,7 +105,7 @@ function lengthAt({ ys, lengths }: Trail, y: number) {
 }
 
 /** Centre of `el` inside `root`, from layout offsets so transforms in between do not skew it. */
-function centreIn(el: HTMLElement, root: HTMLElement): Point {
+export function centreIn(el: HTMLElement, root: HTMLElement): Point {
   let x = el.offsetWidth / 2;
   let y = el.offsetHeight / 2;
   for (let node: HTMLElement | null = el; node && node !== root; node = node.offsetParent as HTMLElement | null) {

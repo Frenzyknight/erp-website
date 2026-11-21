@@ -7,7 +7,6 @@ import { Benefits } from "@/components/sections/Benefits";
 import { Investment } from "@/components/sections/Investment";
 import { Configurator } from "@/components/configurator/Configurator";
 import { Contact } from "@/components/sections/Contact";
-import { ErpGlance } from "@/components/ui/ProductGlance";
 import { erpBenefits, statements } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -28,9 +27,10 @@ export default function CustomErpPage() {
         body="We fix the process first, then build only the modules your business runs on."
         primary={{ href: "#build", label: "Build your ERP" }}
         secondary={{ href: "#contact", label: "Book a free process review" }}
-        media={<ErpGlance />}
+        look="wheel"
+        words={["Process", "Modules", "One flow"]}
       />
-      <Statement label="The problem" text={statements.erp} />
+      <Statement label="The problem" text={statements.erp} scribble="fit the business." />
       <ModulesGrid />
       <Benefits
         id="erp-benefits-title"

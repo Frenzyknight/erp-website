@@ -19,6 +19,8 @@ export function Offerings() {
     <Section labelledBy="offerings-title">
       <SectionHeader
         id="offerings-title"
+        align="side"
+        label="What we build"
         title="One team. Two things we build."
         accent="Two things we build."
         body="A custom ERP for how your teams work, and a WhatsApp agent for what happens after the sale."

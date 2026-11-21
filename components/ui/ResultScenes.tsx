@@ -21,7 +21,7 @@ const skyGlow = "[--glow:color-mix(in_srgb,var(--color-sky)_55%,transparent)]";
 
 function Scene({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div role="img" aria-label={label} className="scene aspect-[16/10] w-full overflow-hidden rounded-sm bg-white">
+    <div role="img" aria-label={label} className="scene aspect-[16/10] w-full overflow-hidden rounded-sm bg-surface">
       <div aria-hidden className="relative size-full text-sub text-ink">
         {children}
       </div>
@@ -37,7 +37,9 @@ function Head({ icon, strong = false, children }: { icon: React.ReactNode; stron
         strong ? "text-ink" : "text-muted"
       }`}
     >
-      <span className={`grid size-8 place-items-center rounded-sm ${strong ? "bg-tint text-blue" : "bg-surface text-navy"}`}>
+      <span
+        className={`grid size-8 place-items-center rounded-sm border border-line bg-white ${strong ? "text-blue" : "text-navy"}`}
+      >
         {icon}
       </span>
       {children}
@@ -259,7 +261,7 @@ export function ControlScene() {
             <span
               key={i}
               style={at(0.24 + Math.floor(i / 5) * 0.37)}
-              className="relative grid size-12 animate-scene-flash place-items-center rounded-sm border border-line bg-surface text-mist"
+              className="relative grid size-12 animate-scene-flash place-items-center rounded-sm border border-line bg-white text-mist"
             >
               <FileText className="size-5" strokeWidth={1.5} />
               {i === picked && (

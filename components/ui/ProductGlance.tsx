@@ -30,19 +30,6 @@ const messages = [
 const tile = "rounded-sm bg-white p-2.5";
 const tileTitle = "truncate text-micro font-semibold text-muted";
 
-/** The label that names a product, sitting just above its picture. The pictures sit on navy, so the labels are white or blue. */
-export function GlanceTag({ children, tone = "white" }: { children: React.ReactNode; tone?: "white" | "blue" }) {
-  return (
-    <p
-      className={`mono-label mb-2 inline-flex rounded-sm px-2 py-1 ${
-        tone === "white" ? "bg-white text-navy" : "bg-blue text-white"
-      }`}
-    >
-      {children}
-    </p>
-  );
-}
-
 /** An ERP window: three figures, a sales pipeline and a stock chart. */
 export function ErpGlance({ className = "" }: { className?: string }) {
   return (
@@ -106,12 +93,8 @@ export function ErpGlance({ className = "" }: { className?: string }) {
   );
 }
 
-/**
- * A phone showing three automated WhatsApp messages, arriving one after another.
- * "short" drops the last message below "sm", where the phone is narrow enough
- * that three wrapped messages would make it taller than the picture it sits in.
- */
-export function ChatGlance({ className = "", short = false }: { className?: string; short?: boolean }) {
+/** A phone showing three automated WhatsApp messages, arriving one after another. */
+export function ChatGlance({ className = "" }: { className?: string }) {
   return (
     // The hairline ring keeps the navy handset visible where it sits on the navy hero.
     <div className={`rounded-2xl bg-navy p-1.5 shadow-float ring-1 ring-white/25 ${className}`}>
@@ -133,9 +116,7 @@ export function ChatGlance({ className = "", short = false }: { className?: stri
               <li
                 key={i}
                 style={{ animationDelay: `${0.5 + i * 0.55}s` }}
-                className={`animate-pop ${mine ? "justify-end" : "justify-start"} ${
-                  short && i === messages.length - 1 ? "hidden sm:flex" : "flex"
-                }`}
+                className={`flex animate-pop ${mine ? "justify-end" : "justify-start"}`}
               >
                 <div
                   className={`max-w-[88%] rounded-md px-2.5 py-2 text-sub ${
@@ -154,23 +135,6 @@ export function ChatGlance({ className = "", short = false }: { className?: stri
             );
           })}
         </ul>
-      </div>
-    </div>
-  );
-}
-
-/** Both products together: the ERP window behind, the phone in front and drifting slowly. */
-export function ProductPair() {
-  return (
-    <div className="relative aspect-[10/9] w-full sm:aspect-[10/9]">
-      <span aria-hidden className="absolute bottom-[8%] right-[2%] size-[52%] rounded-full bg-blue/30 blur-3xl" />
-      <div className="absolute left-0 top-0 w-[86%] sm:w-[80%]">
-        <GlanceTag>Custom ERP</GlanceTag>
-        <ErpGlance />
-      </div>
-      <div className="absolute bottom-0 right-0 w-[50%] animate-float sm:w-[40%]">
-        <GlanceTag tone="blue">CRM Agent</GlanceTag>
-        <ChatGlance short />
       </div>
     </div>
   );

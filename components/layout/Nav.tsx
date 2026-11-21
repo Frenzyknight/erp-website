@@ -98,7 +98,8 @@ export function Nav() {
       data-tone="dark"
       // Tabbing into a tucked bar brings it back, so focus is never off screen.
       onFocusCapture={() => setTucked(false)}
-      className={`fixed inset-x-0 top-0 z-50 transition-transform duration-[450ms] ease-swift ${
+      // The bar steps aside while the homepage hero plays its film.
+      className={`fixed inset-x-0 top-0 z-50 transition-[translate,opacity] duration-[450ms] ease-swift in-data-hero-film:pointer-events-none in-data-hero-film:opacity-0 ${
         tucked && !menuOpen ? "-translate-y-full" : ""
       }`}
     >
