@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
+import { Carousel } from "@/components/ui/Carousel";
 import { tagClass } from "@/components/ui/Chip";
 import { ModuleIcon } from "@/components/ui/ModuleIcon";
 import { Section, SectionHeader } from "@/components/ui/Section";
@@ -12,7 +13,8 @@ const card = "flex h-full flex-col items-start rounded-lg p-5 md:p-8";
  * The two things Polaris builds, as a pair of equal cards set close together:
  * the ERP on navy, the CRM agent on the pale panel colour. Each names the
  * product in small capitals, lists what is inside it, states its one-line
- * promise over a hairline, and links to its own page.
+ * promise over a hairline, and links to its own page. On a phone the pair is
+ * swiped through, with the edge of the second card showing beside the first.
  */
 export function Offerings() {
   return (
@@ -26,7 +28,7 @@ export function Offerings() {
         body="A custom ERP for how your teams work, and a WhatsApp agent for what happens after the sale."
       />
 
-      <div className="mt-12 grid gap-2 md:mt-20 lg:grid-cols-2 lg:gap-3">
+      <Carousel label="What we build" className="mt-12 md:mt-20" track="md:grid md:gap-2 lg:grid-cols-2 lg:gap-3">
         <Reveal className="h-full">
           <article className={`${card} bg-navy`}>
             <p className="mono-label text-mist">Custom ERP</p>
@@ -76,7 +78,7 @@ export function Offerings() {
             </div>
           </article>
         </Reveal>
-      </div>
+      </Carousel>
     </Section>
   );
 }

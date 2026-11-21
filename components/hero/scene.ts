@@ -29,6 +29,10 @@ export type HeroScene = {
    * without passing through the rest of the film on the way.
    */
   render(time: number, film: number, swayX: number, swayY: number, home?: number): void;
+  /** Milliseconds the picture at rest takes to draw at its present size, found by drawing it a few times and waiting for each to finish. */
+  cost(): Promise<number>;
+  /** Thins out the bloom, for a device that turns out to be slow. */
+  simplify(): void;
   dispose(): void;
 };
 
@@ -441,12 +445,13 @@ function follow(keys: number[][], p: number, out: number[]) {
   }
 }
 
+/* The backdrop sits at the very back, so it is drawn after the ribbons and only where none of them is in front of it. */
 const BACKDROP_VERTEX = `#version 300 es
 in vec2 aCorner;
 out vec2 vAt;
 void main() {
   vAt = aCorner * 0.5 + 0.5;
-  gl_Position = vec4(aCorner, 0.0, 1.0);
+  gl_Position = vec4(aCorner, 1.0, 1.0);
 }`;
 
 /* Night blue, lifted by one soft glow, under a sparse grid of dots and a little grain. */
@@ -633,9 +638,16 @@ function compile(gl: WebGL2RenderingContext, vertex: string, fragment: string) {
   return program;
 }
 
-/** Sets the picture up on `canvas`, in the given look. Returns null where WebGL 2 is not available, so the caller can show a still instead. */
-export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoops"): HeroScene | null {
-  const gl = canvas.getContext("webgl2", { antialias: true, alpha: false, powerPreference: "high-performance" });
+/**
+ * Sets the picture up on `canvas`, in the given look. `lite` is for a slow device: edges are not smoothed and
+ * the bloom is thinner. Returns null where WebGL 2 is not available, so the caller can show a still instead.
+ */
+export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoops", lite = false): HeroScene | null {
+  const gl = canvas.getContext("webgl2", {
+    antialias: !lite,
+    alpha: false,
+    powerPreference: lite ? "default" : "high-performance",
+  });
   if (!gl) return null;
 
   const backdrop = compile(gl, BACKDROP_VERTEX, BACKDROP_FRAGMENT);
@@ -836,7 +848,10 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
         put(ix, iy, z - hw, 0, 0, -1, FAR_FROM_EDGE);
         put(ox, oy, z - hw, 0, 0, -1, FAR_FROM_EDGE);
 
-        edges.set([ox, oy, z + hw], (i * RINGS + n) * 3);
+        const e = (i * RINGS + n) * 3;
+        edges[e] = ox;
+        edges[e + 1] = oy;
+        edges[e + 2] = z + hw;
 
         if (n === 0 || n === SEGMENTS) {
           const facing = n === 0 ? -1 : 1;
@@ -863,22 +878,54 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
    * The four outer sides of the star (the first four ribbons) share one bar,
    * which repeats every four sides and so runs right around the star.
    */
+  /* These run every frame, so they write straight into their arrays and leave nothing behind for the browser to clear up. */
   const bars = new Float32Array(RIBBONS * 3 * 4);
   const gain = new Float32Array(RIBBONS * 3);
+  function placeBar(at: number, centre: number, half: number, repeat: number, strength: number) {
+    bars[at] = centre;
+    bars[at + 1] = half;
+    bars[at + 2] = repeat;
+    bars[at + 3] = strength;
+  }
   function placeBars(time: number) {
     for (let i = 0; i < RIBBONS; i++) {
       const light = ribbons[i].rest.light;
-      bars.set(light ? [light[0] + time * light[1], light[2], light[3], 1] : [0, 1, 1, 0], i * 4);
-      bars.set([i * 0.37 + time * (0.1 + (i % 5) * 0.018), 1.5 / STRIP_LENGTH, 0.3 + (i % 3) * 0.06, i % 3 === 1 ? 0 : 1], (RIBBONS + i) * 4);
-      bars.set(i < SIDES ? [time * 0.42 - i, 0.2, SIDES, 1] : [0, 1, 1, 0], (RIBBONS * 2 + i) * 4);
+      if (light) placeBar(i * 4, light[0] + time * light[1], light[2], light[3], 1);
+      else placeBar(i * 4, 0, 1, 1, 0);
+      placeBar(
+        (RIBBONS + i) * 4,
+        i * 0.37 + time * (0.1 + (i % 5) * 0.018),
+        1.5 / STRIP_LENGTH,
+        0.3 + (i % 3) * 0.06,
+        i % 3 === 1 ? 0 : 1,
+      );
+      if (i < SIDES) placeBar((RIBBONS * 2 + i) * 4, time * 0.42 - i, 0.2, SIDES, 1);
+      else placeBar((RIBBONS * 2 + i) * 4, 0, 1, 1, 0);
       // The same fourth power as in the shader, so the bloom fades with the bar it belongs to.
       for (let s = 0; s < 3; s++) gain[i * 3 + s] = Math.pow(mix[i * 3 + s], 4);
     }
   }
 
-  /* Bloom: a string of soft discs along each bar that is in view. Returns how many discs it placed. */
+  function placeSprite(at: number, x: number, y: number, z: number, size: number, bright: number, green: number, fall: number) {
+    const o = at * SPRITE;
+    sprites[o] = x;
+    sprites[o + 1] = y;
+    sprites[o + 2] = z;
+    sprites[o + 3] = size;
+    sprites[o + 4] = 0.45 * bright;
+    sprites[o + 5] = green * bright;
+    sprites[o + 6] = bright;
+    sprites[o + 7] = fall;
+  }
+
+  /*
+   * Bloom: a string of soft discs along each bar that is in view. Returns how many discs it placed.
+   * The discs lie over one another, which is costly to draw, so a slow device gets fewer of them, each brighter.
+   */
+  const FULL_BLOOM = 9;
+  let samples = lite ? 6 : FULL_BLOOM;
   function placeBloom(count: number) {
-    const SAMPLES = 9;
+    const each = (FULL_BLOOM / samples) * 0.1;
     for (let i = 0; i < RIBBONS; i++) {
       for (let s = 0; s < 3; s++) {
         const b = (s * RIBBONS + i) * 4;
@@ -890,27 +937,22 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
         const first = Math.ceil((-half - centre) / repeat);
         const lastCopy = Math.floor((1 + half - centre) / repeat);
         for (let copy = first; copy <= lastCopy; copy++) {
-          for (let k = 0; k < SAMPLES; k++) {
-            const reach = (k / (SAMPLES - 1)) * 2 - 1;
+          for (let k = 0; k < samples; k++) {
+            const reach = (k / (samples - 1)) * 2 - 1;
             const along = centre + copy * repeat + reach * half;
             if (along < 0 || along > 1 || count >= MAX_SPRITES) continue;
             const ring = Math.min(SEGMENTS - 1, Math.floor(along * SEGMENTS));
             const part = along * SEGMENTS - ring;
             const e = (i * RINGS + ring) * 3;
-            const fall = 1 - Math.abs(reach) * Math.abs(reach) * 0.6;
-            const glow = strength * fall * 0.1;
-            sprites.set(
-              [
-                edges[e] + (edges[e + 3] - edges[e]) * part,
-                edges[e + 1] + (edges[e + 4] - edges[e + 1]) * part,
-                edges[e + 2] + (edges[e + 5] - edges[e + 2]) * part,
-                0.7,
-                0.45 * glow,
-                0.62 * glow,
-                glow,
-                4.5,
-              ],
-              count * SPRITE,
+            placeSprite(
+              count,
+              edges[e] + (edges[e + 3] - edges[e]) * part,
+              edges[e + 1] + (edges[e + 4] - edges[e + 1]) * part,
+              edges[e + 2] + (edges[e + 5] - edges[e + 2]) * part,
+              0.7,
+              strength * (1 - reach * reach * 0.6) * each,
+              0.62,
+              4.5,
             );
             count++;
           }
@@ -922,19 +964,17 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
 
   function placeDust(time: number) {
     for (let d = 0; d < DUST; d++) {
-      const [x, y, z, size, bright, phase] = dust.subarray(d * 6, d * 6 + 6);
-      sprites.set(
-        [
-          x + Math.sin(time * 0.11 + phase) * 0.5,
-          y + Math.sin(time * 0.07 + phase * 2.3) * 0.4,
-          z + Math.cos(time * 0.09 + phase) * 0.5,
-          size,
-          0.45 * bright,
-          0.6 * bright,
-          bright,
-          3,
-        ],
-        d * SPRITE,
+      const o = d * 6;
+      const phase = dust[o + 5];
+      placeSprite(
+        d,
+        dust[o] + Math.sin(time * 0.11 + phase) * 0.5,
+        dust[o + 1] + Math.sin(time * 0.07 + phase * 2.3) * 0.4,
+        dust[o + 2] + Math.cos(time * 0.09 + phase) * 0.5,
+        dust[o + 3],
+        dust[o + 4],
+        0.6,
+        3,
       );
     }
     return DUST;
@@ -950,7 +990,31 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
   gl.depthFunc(gl.LEQUAL);
   gl.blendFunc(gl.ONE, gl.ONE);
 
-  return {
+  /*
+   * Resolves once everything drawn so far is really on the screen's side of the graphics chip. A browser only
+   * queues what it is asked to draw, so a marker is left at the end of the queue and looked for between tasks
+   * until the chip has passed it. It gives up after a second, as it must if the context is lost meanwhile.
+   */
+  function drawn() {
+    return new Promise<void>((resolve) => {
+      const marker = gl!.fenceSync(gl!.SYNC_GPU_COMMANDS_COMPLETE, 0);
+      gl!.flush();
+      const from = performance.now();
+      const { port1, port2 } = new MessageChannel();
+      port1.onmessage = () => {
+        const waiting = marker !== null && gl!.clientWaitSync(marker, 0, 0) === gl!.TIMEOUT_EXPIRED;
+        if (waiting && performance.now() - from < 1000) return port2.postMessage(0);
+        gl!.deleteSync(marker);
+        port1.close();
+        resolve();
+      };
+      port2.postMessage(0);
+    });
+  }
+
+  let disposed = false;
+
+  const scene: HeroScene = {
     resize(width, height, dpr) {
       const w = Math.max(1, Math.round(width * dpr));
       const h = Math.max(1, Math.round(height * dpr));
@@ -963,6 +1027,7 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
     },
 
     render(time, film, swayX, swayY, home = 0) {
+      if (disposed) return;
       const unroll = clamp01((film - UNROLL[0]) / (UNROLL[1] - UNROLL[0]));
       const gather = clamp01((film - GATHER[0]) / (GATHER[1] - GATHER[0]));
       if (unroll !== builtUnroll || gather !== builtGather || home !== builtHome) build(unroll, gather, home);
@@ -1039,15 +1104,6 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
       gl.clear(gl.DEPTH_BUFFER_BIT);
 
       gl.disable(gl.BLEND);
-      gl.depthMask(false);
-      gl.disable(gl.DEPTH_TEST);
-      gl.useProgram(backdrop);
-      gl.bindVertexArray(backdropArray);
-      gl.uniform2f(backdropAt.uSize, canvas.width, canvas.height);
-      // The glow sits behind the ribbons at rest, and moves to the middle to stand behind the star.
-      gl.uniform3f(backdropAt.uGlow, glow[0] + (0.5 - glow[0]) * settle, glow[1] + (0.5 - glow[1]) * settle, 1 - 0.4 * settle);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
       gl.enable(gl.DEPTH_TEST);
       gl.depthMask(true);
       gl.useProgram(ribbon);
@@ -1070,8 +1126,16 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
       gl.uniform1f(ribbonAt.uGround, 1 - ease(film / 0.5) * stay);
       gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
-      const count = placeBloom(placeDust(time));
+      // The backdrop fills what the ribbons have left, so no part of the screen is shaded twice.
       gl.depthMask(false);
+      gl.useProgram(backdrop);
+      gl.bindVertexArray(backdropArray);
+      gl.uniform2f(backdropAt.uSize, canvas.width, canvas.height);
+      // The glow sits behind the ribbons at rest, and moves to the middle to stand behind the star.
+      gl.uniform3f(backdropAt.uGlow, glow[0] + (0.5 - glow[0]) * settle, glow[1] + (0.5 - glow[1]) * settle, 1 - 0.4 * settle);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      const count = placeBloom(placeDust(time));
       gl.enable(gl.BLEND);
       gl.useProgram(sprite);
       gl.bindVertexArray(spriteArray);
@@ -1083,10 +1147,31 @@ export function createHeroScene(canvas: HTMLCanvasElement, look: HeroLook = "hoo
       gl.bindVertexArray(null);
     },
 
+    async cost() {
+      // The first frame also builds the shaders and fills the buffers, so it is drawn and not counted.
+      // The quickest of the rest is taken, since anything else the page is doing can only add to a time.
+      scene.render(20, 0, 0, 0);
+      await drawn();
+      let quickest = Infinity;
+      for (let f = 1; f <= 3; f++) {
+        const from = performance.now();
+        scene.render(20 + f / 60, 0, 0, 0);
+        await drawn();
+        quickest = Math.min(quickest, performance.now() - from);
+      }
+      return quickest;
+    },
+
+    simplify() {
+      samples = 6;
+    },
+
     dispose() {
+      disposed = true;
       for (const buffer of [shapeBuffer, fixedBuffer, indexBuffer, cornerBuffer, spriteBuffer]) gl.deleteBuffer(buffer);
       for (const array of [ribbonArray, backdropArray, spriteArray]) gl.deleteVertexArray(array);
       for (const program of [backdrop, ribbon, sprite]) gl.deleteProgram(program);
     },
   };
+  return scene;
 }

@@ -1,11 +1,13 @@
 import type { LucideIcon } from "lucide-react";
+import { Carousel } from "@/components/ui/Carousel";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 
 /**
  * The outcomes as a row of tiles under the heading, so the section fills its
  * width: each tile has its icon and number at the top and its name and one
- * line at the foot. Two across on a tablet, four on a desktop.
+ * line at the foot. Swiped through one at a time on a phone, two across on a
+ * tablet, four on a desktop.
  */
 export function Benefits({
   id,
@@ -30,7 +32,14 @@ export function Benefits({
     <Section tone={tone} labelledBy={id}>
       <SectionHeader id={id} label={label} title={title} accent={accent} align="left" onDark={onDark} />
 
-      <ul className="mt-12 grid gap-2 sm:grid-cols-2 md:mt-20 lg:grid-cols-4 lg:gap-3">
+      <Carousel
+        as="ul"
+        label={title}
+        until="sm"
+        onDark={onDark}
+        className="mt-12 md:mt-20"
+        track="sm:grid sm:grid-cols-2 sm:gap-2 lg:grid-cols-4 lg:gap-3"
+      >
         {items.map(({ icon: Icon, title, body }, i) => (
           <li key={title}>
             <Reveal delay={i * 0.06} className="h-full">
@@ -47,7 +56,7 @@ export function Benefits({
             </Reveal>
           </li>
         ))}
-      </ul>
+      </Carousel>
     </Section>
   );
 }

@@ -3,16 +3,36 @@
 import { useEffect, useRef } from "react";
 import { HeroArt } from "@/components/ui/HeroArt";
 import { createHeroScene, type HeroLook } from "@/components/hero/scene";
+import { goLite, isLite, isSiteReady, setSiteReady, siteOpenedAt } from "@/lib/device";
 import { useReducedMotionSafe } from "@/lib/hooks";
 
 /* Seconds of holding to run the film through. */
 const LENGTH = 8;
+/* On arrival, how long the star is kept after the loading screen starts to open, in milliseconds: until the opening has cleared it. */
+const ARRIVAL = 520;
 /* Seconds the picture takes to go home from the end of the film once the hold is let go. Less from earlier in the film, which has less far to go. */
 const RETURN = 1.6;
 /* Seconds to pick the film up again where it was left, when the hold is taken up on the way home. */
 const RESUME = 0.5;
 /* How long a press must last, in milliseconds, before it counts as a hold. A finger gets longer, so a scroll never starts the film. */
 const GRACE = { mouse: 120, touch: 260 };
+
+/*
+ * How much the picture is asked to draw. `pixels` is the most it is drawn
+ * with and `sharp` the most device pixels it uses for each CSS pixel: enough
+ * to look sharp, never so many that a large or dense screen struggles. A
+ * phone's screen is small and dense, so it gets fewer for the same look.
+ * `pace` is the pictures drawn a second and `spare` the milliseconds one may
+ * take to draw, which leaves the rest of the frame for the page.
+ */
+const FULL = { pixels: 4_200_000, sharp: 2, pace: 60, spare: 10 };
+const PHONE = { ...FULL, pixels: 1_300_000, sharp: 1.5 };
+const LITE = { pixels: 900_000, sharp: 1.5, pace: 30, spare: 20 };
+/* The fewest pixels worth drawing. A device too slow even for these gets one still picture. */
+const FEWEST = 300_000;
+const TOO_SLOW = 70;
+/* The room the ring and its caption need, in pixels, to rest clear of the navigation and the headline. */
+const RING_ROOM = 176;
 
 /* When each word shows, as a stretch of the film, and where on the screen it stands. */
 const CUES = [
@@ -33,6 +53,17 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
  * go straight from wherever they are to the picture at rest. A ring follows
  * the pointer to say so, and fills as the film runs.
  *
+ * On arrival the same journey home is the page's opening. Behind the loading
+ * screen the picture waits as the star, the end of the film; the screen opens
+ * onto it (see components/layout/Loader.tsx), and the star then comes home to
+ * the page's look and brings the text in with it. A slow device, and one with
+ * reduced motion, opens on the picture at rest instead.
+ *
+ * The picture is fitted to the device before it is first shown: it is timed,
+ * and drawn with fewer pixels until it is quick enough. A slow device gets
+ * the lite picture, drawn half as often, and one that is slower still gets a
+ * single still frame. The pace is watched for as long as the picture runs.
+ *
  * Where WebGL is missing the still artwork shows instead, and with reduced
  * motion the picture is drawn once and the film is switched off.
  */
@@ -48,21 +79,23 @@ export function HeroFilm({
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotionSafe();
 
   useEffect(() => {
     const section = sectionRef.current;
     const canvas = canvasRef.current;
-    if (!section || !canvas) return;
+    const content = contentRef.current;
+    if (!section || !canvas || !content) return;
 
-    let scene = createHeroScene(canvas, look);
+    let lite = isLite();
+    let scene = createHeroScene(canvas, look, lite);
     if (!scene) {
       section.dataset.art = "still";
       return () => {
         delete section.dataset.art;
       };
     }
-    section.dataset.art = "live";
 
     const root = document.documentElement;
     const ring = section.querySelector<HTMLElement>("[data-ring]");
@@ -77,13 +110,30 @@ export function HeroFilm({
       })),
     );
     const finePointer = window.matchMedia("(pointer: fine)");
+    const phone = !finePointer.matches && Math.min(window.screen.width, window.screen.height) < 600;
 
+    let limits = lite ? LITE : phone ? PHONE : FULL;
+    let budget = limits.pixels;
+    // With reduced motion, or on a device that cannot keep up at all, the picture is one still frame.
+    let still = reduce;
+    // The picture is not run, or shown, until it has been fitted to the device.
+    let fitted = false;
+    let onScreen = false;
+    let gone = false;
+    let slowSpells = 0;
+    let paceFrom = 0;
+    let paceFrames = 0;
+    let watchFrom = 0;
     let width = 1;
     let height = 1;
+    let restY = 0;
+    let roomy = true;
     let film = 0;
     let rate = 0;
     // How far the picture has gone home since the hold was let go, from 0 (where the film left it) to 1 (at rest).
     let home = 0;
+    // True from the picture's first frame behind the loading screen until it has come home from the star and the text is back.
+    let arriving = false;
     let pressedAt = 0;
     let grace = GRACE.mouse;
     let playing = false;
@@ -100,10 +150,78 @@ export function HeroFilm({
     const measure = () => {
       width = section.clientWidth;
       height = section.clientHeight;
-      // Sharp on dense screens, but never so many pixels that a large one struggles.
-      const dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(4_200_000 / (width * height)));
+      const dpr = Math.min(window.devicePixelRatio || 1, limits.sharp, Math.sqrt(budget / (width * height)));
       scene?.resize(width, height, dpr);
-      if (reduce) scene?.render(20, 0, 0, 0);
+      if (still) scene?.render(20, 0, 0, 0);
+
+      // The ring rests in the open part of the picture, between the navigation and the text. From layout
+      // offsets, so the text's entrance does not skew it. A short screen has no open part, and no ring at rest.
+      let top = 0;
+      const text = content.querySelector<HTMLElement>("h1")?.parentElement ?? content;
+      for (let el: HTMLElement | null = text; el && el !== section; el = el.offsetParent as HTMLElement | null) {
+        top += el.offsetTop;
+      }
+      const bar = document.querySelector("header")?.offsetHeight ?? 72;
+      roomy = top - bar >= RING_ROOM;
+      // The ring's centre is 16px above the middle of the ring and caption together.
+      restY = width < 1024 ? Math.max(height * 0.2, (bar + top) / 2 - 16) : Math.min(height * 0.44, top - 124);
+    };
+
+    const goStill = () => {
+      still = true;
+      section.dataset.film = "off";
+      stop();
+      scene?.render(20, 0, 0, 0);
+    };
+    const setLite = () => {
+      lite = true;
+      limits = LITE;
+      budget = Math.min(budget, LITE.pixels);
+      scene?.simplify();
+      goLite();
+    };
+
+    // Fits the picture to the device before it is shown: times it, and takes pixels away until it is quick enough.
+    const fit = async () => {
+      if (!scene) return;
+      measure();
+      for (let pass = 0; pass < 3 && !still && !gone; pass++) {
+        const took = await scene.cost();
+        if (gone) return;
+        if (took <= limits.spare * 1.15) return;
+        // Too slow by far for the full picture: it would have to lose most of its pixels to keep its pace.
+        if (!lite && took > limits.spare * 2.5) setLite();
+        const pixels = canvas.width * canvas.height;
+        if (pixels <= FEWEST * 1.05) {
+          if (took > TOO_SLOW) goStill();
+          return;
+        }
+        // The time goes with the number of pixels, near enough.
+        budget = Math.max(FEWEST, Math.min(budget, pixels * (limits.spare / took) * 0.9));
+        measure();
+      }
+    };
+
+    // Watches the pace once the picture is running, a second at a time, and steps down if it falls well behind.
+    const watch = (now: number, gap: number) => {
+      if (gap > 250 || now < watchFrom) {
+        paceFrom = now;
+        paceFrames = 0;
+        return;
+      }
+      paceFrames++;
+      if (now - paceFrom < 1000) return;
+      const average = (now - paceFrom) / paceFrames;
+      paceFrom = now;
+      paceFrames = 0;
+      if (average < (1000 / limits.pace) * 1.6) return;
+      slowSpells++;
+      watchFrom = now + 600;
+      const pixels = canvas.width * canvas.height;
+      if (!lite && slowSpells > 1) setLite();
+      else if (pixels > FEWEST * 1.05) budget = Math.max(FEWEST, pixels * 0.55);
+      else if (lite) return goStill();
+      measure();
     };
 
     const setPlaying = (on: boolean) => {
@@ -116,11 +234,22 @@ export function HeroFilm({
       held = on;
       section.toggleAttribute("data-held", on);
     };
+    // The arrival is over, however it ended. If the loading screen was leaving the text's entrance to this hero, it is due now.
+    const endArrival = () => {
+      if (!arriving) return;
+      arriving = false;
+      if (siteOpenedAt()) setSiteReady();
+    };
 
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw);
-      const dt = Math.min(0.05, (now - last) / 1000);
+      // However fast the screen, the picture is drawn sixty times a second at most, and thirty on a slow device.
+      const gap = now - last;
+      if (gap < 1000 / limits.pace - 4) return;
+      const dt = Math.min(0.1, gap / 1000);
       last = now;
+      watch(now, gap);
+      if (still) return;
 
       // The film gathers speed and slows to a stop, so pressing and letting go never jolt it. It never runs backwards.
       setHeld(pressedAt > 0 && now - pressedAt > grace);
@@ -128,9 +257,14 @@ export function HeroFilm({
       film = clamp01(film + rate * dt);
       if (film === 1) rate = 0;
 
+      // On arrival the star is kept, as if held, until the loading screen has opened onto it. The pace is not judged meanwhile.
+      const opened = siteOpenedAt();
+      const waiting = arriving && !(opened && now - opened > ARRIVAL);
+      if (arriving) watchFrom = now + 1500;
+
       // Let go, the picture goes straight home, and the film is back at its start once it is there.
       // Held again on the way, it comes back to where the film was left and the film carries on.
-      if (held) {
+      if (held || waiting) {
         home = Math.max(0, home - dt / RESUME);
       } else if (film > 0) {
         home += dt / (RETURN * (0.45 + 0.55 * film));
@@ -142,6 +276,7 @@ export function HeroFilm({
       }
       // The page's text comes back while the picture is still settling, so the two arrive together.
       setPlaying(held || (film > 0.035 && home < 0.6));
+      if (!playing) endArrival();
       // What the ring and the words show of the film: all of it while held, and less and less on the way home.
       const kept = film * (1 - home * home * (3 - 2 * home));
       const wordsKept = clamp01(1 - home * 4);
@@ -153,15 +288,18 @@ export function HeroFilm({
       scene?.render(now / 1000, film, swayX, swayY, home);
 
       // The ring rests in the open part of the picture, and goes to the pointer whenever a mouse is over it.
+      // Where the text leaves it nowhere to rest, it shows only while the film plays and the text is out of the way.
       if (ring && arc) {
         const toX = follow ? pointer.x : width / 2;
-        const toY = follow ? pointer.y : height * (width < 1024 ? 0.3 : 0.44);
+        const toY = follow ? pointer.y : restY;
         const glide = ringPlaced ? 1 - Math.exp(-dt * 14) : 1;
         ringPlaced = true;
         ringX += (toX - ringX) * glide;
         ringY += (toY - ringY) * glide;
         ring.style.transform = `translate3d(${ringX.toFixed(1)}px, ${ringY.toFixed(1)}px, 0)`;
-        ring.style.opacity = (follow && pointer.onLink && !held) || kept > 0.93 ? "0" : "1";
+        const crowded = !follow && !roomy && !playing;
+        // It keeps out of the arrival, and shows once the text is back.
+        ring.style.opacity = (follow && pointer.onLink && !held) || kept > 0.93 || crowded || arriving ? "0" : "1";
         arc.style.strokeDashoffset = (1 - kept).toFixed(4);
       }
 
@@ -178,7 +316,12 @@ export function HeroFilm({
 
     const start = () => {
       cancelAnimationFrame(frame);
+      if (still || !fitted) return;
       last = performance.now();
+      // The page is still settling when the picture first runs, so the pace is not judged straight away.
+      watchFrom = last + 1500;
+      // The star stands alone: the text and the navigation are out of the way before the loading screen opens.
+      if (arriving) setPlaying(true);
       frame = requestAnimationFrame(draw);
     };
     const stop = () => {
@@ -189,6 +332,7 @@ export function HeroFilm({
       home = 0;
       setHeld(false);
       setPlaying(false);
+      endArrival();
       for (const letter of letters) {
         letter.shown = 0;
         letter.el.style.opacity = "0";
@@ -207,7 +351,7 @@ export function HeroFilm({
       pointer.inside = false;
     };
     const press = (e: PointerEvent) => {
-      if (e.button !== 0 || !e.isPrimary || onLink(e)) return;
+      if (still || e.button !== 0 || !e.isPrimary || onLink(e)) return;
       track(e);
       const mouse = e.pointerType === "mouse";
       grace = mouse ? GRACE.mouse : GRACE.touch;
@@ -220,7 +364,7 @@ export function HeroFilm({
     };
     // A hold must not select the headline or drag anything, and a long touch must not open the browser's menu.
     const guardMouse = (e: MouseEvent) => {
-      if (!onLink(e)) e.preventDefault();
+      if (!still && !onLink(e)) e.preventDefault();
     };
     const guardMenu = (e: MouseEvent) => {
       if (held) e.preventDefault();
@@ -230,15 +374,39 @@ export function HeroFilm({
       stop();
     };
     const restored = () => {
-      scene = createHeroScene(canvas, look);
+      scene = createHeroScene(canvas, look, lite);
       measure();
-      if (!reduce) start();
+      start();
     };
 
+    // The picture is fitted and drawn once before it is shown, so it never appears half made.
+    fit().then(() => {
+      if (gone) return;
+      fitted = true;
+      // Fitted while the loading screen is still up, the picture starts at the end of its film, as the star.
+      // Only if it is in view, though, which a page reloaded part of the way down is not: out of view the
+      // picture is not run, and the star would still be standing there whenever the page was scrolled back up.
+      const box = section.getBoundingClientRect();
+      arriving = !still && !lite && !siteOpenedAt() && box.bottom > 0 && box.top < window.innerHeight;
+      if (arriving) film = 1;
+      scene?.render(20, film, 0, 0);
+      // Behind the loading screen there is nobody to fade in for: the picture is simply there when the screen lifts.
+      if (!isSiteReady()) canvas.style.transition = "none";
+      section.dataset.art = "live";
+      if (still) section.dataset.film = "off";
+      if (onScreen) start();
+    });
+
+    // The text can wrap differently without the section changing size, so both are watched.
     const resizing = new ResizeObserver(measure);
     resizing.observe(section);
+    resizing.observe(content);
     // Nothing is drawn while the hero is off screen, and a film left running is put back to its start.
-    const watching = new IntersectionObserver(([entry]) => (entry.isIntersecting && !reduce ? start() : stop()));
+    const watching = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      if (onScreen) start();
+      else stop();
+    });
     watching.observe(section);
     canvas.addEventListener("webglcontextlost", lost);
     canvas.addEventListener("webglcontextrestored", restored);
@@ -255,6 +423,7 @@ export function HeroFilm({
     }
 
     return () => {
+      gone = true;
       stop();
       resizing.disconnect();
       watching.disconnect();
@@ -269,7 +438,9 @@ export function HeroFilm({
       section.removeEventListener("contextmenu", guardMenu);
       window.removeEventListener("blur", release);
       scene?.dispose();
+      canvas.style.transition = "";
       delete section.dataset.art;
+      delete section.dataset.film;
     };
   }, [reduce, look]);
 
@@ -302,7 +473,10 @@ export function HeroFilm({
         ))}
       </div>
 
-      <div className="relative transition-opacity duration-500 ease-out in-data-hero-film:pointer-events-none in-data-hero-film:opacity-0">
+      <div
+        ref={contentRef}
+        className="relative transition-opacity duration-500 ease-out in-data-hero-film:pointer-events-none in-data-hero-film:opacity-0"
+      >
         {children}
       </div>
 
@@ -310,7 +484,7 @@ export function HeroFilm({
       <div
         data-ring
         aria-hidden
-        className="pointer-events-none absolute top-0 left-0 opacity-0 transition-opacity duration-300 ease-out motion-reduce:hidden"
+        className="pointer-events-none absolute top-0 left-0 opacity-0 transition-opacity duration-300 ease-out group-data-[film=off]/hero:hidden motion-reduce:hidden"
       >
         <svg
           viewBox="0 0 88 88"

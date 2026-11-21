@@ -92,7 +92,7 @@ const head = "flex items-center justify-between gap-4 px-5 py-4 md:px-6 md:py-5"
 function Status({ live, children }: { live: boolean; children: React.ReactNode }) {
   return (
     <p className="flex shrink-0 items-center gap-3">
-      <span className="mono-label grid justify-items-end">
+      <span className="mono-label grid justify-items-end whitespace-nowrap">
         <span className={`[grid-area:1/1] ${live ? "invisible" : ""}`}>Setting up</span>
         <span className={`[grid-area:1/1] ${live ? "" : "invisible"}`}>Live</span>
       </span>

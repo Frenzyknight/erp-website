@@ -3,9 +3,10 @@ import { ButtonLink } from "@/components/ui/Button";
 import { StarMark } from "@/components/ui/Logo";
 import { company, navLinks, whatsappLink } from "@/lib/content";
 
+/* Each link is padded to a size a thumb can hit, and the lists take that much less space between their rows. */
 const bigLink =
-  "font-display text-h5 whitespace-nowrap text-white md:text-h4 transition-colors duration-200 ease-out hover:text-sky";
-const smallLink = "text-body text-white transition-colors duration-200 ease-out hover:text-sky";
+  "inline-block py-2 font-display text-h5 whitespace-nowrap text-white md:py-1 md:text-h4 transition-colors duration-200 ease-out hover:text-sky";
+const smallLink = "inline-block py-2.5 text-body md:py-1.5 text-white transition-colors duration-200 ease-out hover:text-sky";
 const finePrint = "text-sub text-white/55";
 
 const actions = [
@@ -26,7 +27,7 @@ export function Footer() {
       <div className="relative z-[2] rounded-t-[var(--sheet-r)] bg-white px-4 pt-4 md:px-7 md:pt-7">
         <div className="grid grid-cols-2 gap-x-4 gap-y-8 rounded-xl bg-navy px-6 py-8 md:grid-cols-4 md:gap-x-12 md:gap-y-40 md:rounded-2xl md:p-16">
           <nav aria-label="Pages">
-            <ul className="space-y-2 md:space-y-3">
+            <ul className="md:space-y-1">
               {navLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className={bigLink}>
@@ -38,7 +39,7 @@ export function Footer() {
           </nav>
 
           <nav aria-label="Get started" className="justify-self-end md:justify-self-start">
-            <ul className="space-y-2 md:space-y-3">
+            <ul className="md:space-y-1">
               {actions.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className={bigLink}>
@@ -49,7 +50,7 @@ export function Footer() {
             </ul>
           </nav>
 
-          <ul aria-label="Contact" className="col-span-2 space-y-3 md:col-span-1">
+          <ul aria-label="Contact" className="col-span-2 -my-2.5 md:col-span-1 md:-my-1.5">
             <li>
               {/* An address may break anywhere on a narrow column. */}
               <a href={`mailto:${company.email}`} className={`${smallLink} break-all`}>

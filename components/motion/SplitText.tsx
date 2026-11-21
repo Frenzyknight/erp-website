@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { motion } from "motion/react";
 import { riseEase } from "@/components/motion/Reveal";
+import { useSiteReady } from "@/lib/device";
 
 /** Marks each word of `text` that falls inside the phrase `accent`. */
 function splitWords(text: string, accent?: string) {
@@ -32,11 +33,14 @@ export function SplitText({
   accent?: string;
   accentClass?: string;
 }) {
+  // A heading in view on arrival waits behind the loading screen, and rises as the screen lifts.
+  const ready = useSiteReady();
+
   return (
     <motion.span
       className="block"
       initial="hidden"
-      whileInView="shown"
+      whileInView={ready ? "shown" : "hidden"}
       viewport={{ once: true, margin: "0px 0px -6% 0px" }}
       transition={{ staggerChildren: 0.035 }}
     >

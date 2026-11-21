@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useMotionValueEvent, useScroll } from "motion/react";
 import type { LucideIcon } from "lucide-react";
-import { useReducedMotionSafe } from "@/lib/hooks";
+import { Carousel } from "@/components/ui/Carousel";
+import { useMediaQuery, useReducedMotionSafe } from "@/lib/hooks";
 
 export type TrailStep = {
   icon: LucideIcon;
@@ -126,8 +127,12 @@ const rings = [
  * Steps as cards on alternating sides of a path that winds down the section.
  * The path is dotted until the visitor scrolls past it, when it is drawn in
  * the accent; each step's marker switches on as the line arrives, and the
- * step it reached last carries rings and a glow. On a phone the path is a
- * straight line down the left. It is made for the "surface" sheet.
+ * step it reached last carries rings and a glow. It is made for the "surface"
+ * sheet.
+ *
+ * On a phone the steps are a carousel instead. The path runs sideways through
+ * the markers, one stretch per step, and the step in front is the one the
+ * line has reached: swiping on draws the next stretch and switches that step on.
  */
 export function StepTrail({ steps }: { steps: TrailStep[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -135,6 +140,8 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
   const trailRef = useRef<Trail | null>(null);
   const [d, setD] = useState("");
   const [reached, setReached] = useState(0);
+  const [slide, setSlide] = useState(0);
+  const winding = useMediaQuery("(width >= 48rem)");
   const reduce = useReducedMotionSafe();
   const { scrollYProgress } = useScroll({
     target: rootRef,
@@ -160,6 +167,12 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
     const observer = new ResizeObserver(() => {
       const markers = markerRefs.current.flatMap((el) => (el ? [centreIn(el, root)] : []));
       if (markers.length < 2) return;
+      // In the carousel the markers sit in a row and each step draws its own stretch of line, so there is no path.
+      if (markers[1].y - markers[0].y < 1) {
+        trailRef.current = null;
+        setD("");
+        return;
+      }
       const trail = buildTrail(markers, root.offsetHeight);
       trailRef.current = trail;
       setD(trail.d);
@@ -169,17 +182,21 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
     return () => observer.disconnect();
   }, [sync]);
 
-  const last = reduce ? steps.length - 1 : reached;
-  const line = { d, strokeWidth: 4, strokeLinecap: "round", strokeLinejoin: "round", className: "stroke-blue" } as const;
+  // Down the winding path the scroll says how far the line has come; in the carousel the slide in front does.
+  const last = !winding ? slide : reduce ? steps.length - 1 : reached;
+  const stroke = { strokeLinecap: "round", strokeLinejoin: "round" } as const;
+  const dots = { ...stroke, strokeWidth: 2.5, strokeDasharray: "0.1 9", className: "stroke-muted/70" } as const;
+  const line = { ...stroke, d, strokeWidth: 4, className: "stroke-blue" } as const;
 
   return (
     <div ref={rootRef} className="relative mx-auto mt-10 max-w-[64rem] md:mt-16">
-      <svg aria-hidden fill="none" className="pointer-events-none absolute inset-0 size-full overflow-visible">
-        <path d={d} strokeWidth={2.5} strokeLinecap="round" strokeDasharray="0.1 9" className="stroke-muted/70" />
+      <svg aria-hidden fill="none" className="pointer-events-none absolute inset-0 size-full overflow-visible max-md:hidden">
+        <path d={d} {...dots} />
         {reduce ? <path {...line} /> : <motion.path {...line} style={{ pathLength: drawn }} />}
       </svg>
 
-      <ol className="relative">
+      {/* The row is deeper than its cards, so the glow under the step in front is not cut off; the controls move up into the spare room. */}
+      <Carousel as="ol" label="Steps" onChange={setSlide} track="max-md:-mb-12 max-md:pb-14">
         {steps.map((step, i) => {
           const { icon: Icon, Visual } = step;
           const on = i <= last;
@@ -193,16 +210,35 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
           return (
             <li
               key={step.title}
-              className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-4 md:grid-cols-[minmax(0,1fr)_clamp(11rem,24vw,20rem)_minmax(0,1fr)] md:gap-x-0 ${
-                i ? "mt-6 md:-mt-20" : ""
+              className={`max-md:relative max-md:flex max-md:flex-col md:grid md:grid-cols-[minmax(0,1fr)_clamp(11rem,24vw,20rem)_minmax(0,1fr)] md:items-start ${
+                i ? "md:-mt-20" : ""
               }`}
             >
+              {/* The stretch of path from this marker to the next slide's, drawn when that step is reached. */}
+              {i < steps.length - 1 && (
+                <svg
+                  aria-hidden
+                  fill="none"
+                  className="pointer-events-none absolute left-10 top-10 h-px w-[calc(100%+0.5rem)] overflow-visible md:hidden"
+                >
+                  <line x2="100%" {...dots} />
+                  <line
+                    x2="100%"
+                    pathLength={1}
+                    strokeDasharray={1}
+                    strokeDashoffset={i < last ? 0 : 1}
+                    strokeWidth={4}
+                    strokeLinecap="round"
+                    className="stroke-blue transition-[stroke-dashoffset] duration-700 ease-swift"
+                  />
+                </svg>
+              )}
               <span
                 aria-hidden
                 ref={(el) => {
                   markerRefs.current[i] = el;
                 }}
-                className={`relative mt-6 size-10 justify-self-center md:col-start-2 md:row-start-1 md:mt-20 md:size-14 ${markerSide}`}
+                className={`relative size-10 shrink-0 max-md:ml-5 max-md:mt-5 md:col-start-2 md:row-start-1 md:mt-20 md:size-14 ${markerSide}`}
               >
                 {/* A plain disc under the rings, so the path stops at the outer ring instead of running through them. */}
                 <span
@@ -227,7 +263,7 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
               </span>
 
               <div
-                className={`rounded-lg bg-white p-2 transition-shadow duration-700 ease-out md:row-start-1 md:w-full md:max-w-[22rem] ${
+                className={`rounded-lg bg-white p-2 transition-shadow duration-700 ease-out max-md:mt-7 max-md:flex-1 md:row-start-1 md:w-full md:max-w-[22rem] ${
                   cardLeft ? "md:col-start-1 md:justify-self-end" : "md:col-start-3 md:justify-self-start"
                 } ${active ? "shadow-glow" : "shadow-card"}`}
               >
@@ -243,7 +279,7 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
             </li>
           );
         })}
-      </ol>
+      </Carousel>
     </div>
   );
 }

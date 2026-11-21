@@ -1,3 +1,4 @@
+import { Carousel } from "@/components/ui/Carousel";
 import { Section, SectionHeader } from "@/components/ui/Section";
 import { ModuleIcon } from "@/components/ui/ModuleIcon";
 import { Reveal } from "@/components/motion/Reveal";
@@ -5,8 +6,8 @@ import { erpModules } from "@/lib/content";
 
 /**
  * Hover colour for each icon tile: navy or brand blue, alternating. In the
- * two-column layout this makes a checkerboard; in the single-column mobile
- * layout it simply alternates.
+ * two-column layout this makes a checkerboard; on a phone, where each slide
+ * holds two, it simply alternates.
  */
 function hoverTone(i: number) {
   if (i % 2 === 1) {
@@ -23,7 +24,8 @@ function hoverTone(i: number) {
 /**
  * The eight modules, two to a row. Each is a pale card with its icon on a
  * tile at the left, which turns navy or blue on hover; beside it the name, what the
- * module is for, and what is inside it in small capitals.
+ * module is for, and what is inside it in small capitals. On a phone they are
+ * swiped through two at a time, one above the other.
  */
 export function ModulesGrid() {
   return (
@@ -35,7 +37,13 @@ export function ModulesGrid() {
         accent="Take only the ones you need."
         body="Each one is designed around your processes, and they all connect, so the business runs on one flow."
       />
-      <ul className="mt-12 grid gap-2 md:mt-20 md:grid-cols-2 lg:gap-3">
+      <Carousel
+        as="ul"
+        label="Modules"
+        rows={2}
+        className="mt-12 md:mt-20"
+        track="max-md:gap-y-2 md:grid md:grid-cols-2 md:gap-2 lg:gap-3"
+      >
         {erpModules.map((m, i) => (
           <li key={m.id}>
             <Reveal delay={(i % 2) * 0.06} className="h-full">
@@ -56,7 +64,7 @@ export function ModulesGrid() {
             </Reveal>
           </li>
         ))}
-      </ul>
+      </Carousel>
     </Section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Eye, PiggyBank, ShieldCheck, Zap, type LucideIcon } from "lucide-react";
+import { Carousel } from "@/components/ui/Carousel";
 import { Section, SectionHeader, columns } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { ControlScene, CostScene, FlowScene, VisibilityScene } from "@/components/ui/ResultScenes";
@@ -15,7 +16,8 @@ const scenes = [CostScene, FlowScene, ControlScene, VisibilityScene];
  * while the right side scrolls: one picture per outcome inside a hairline, then
  * its name in small capitals and its sentence. The name of the outcome on screen
  * is dark and the others are faint; each name jumps to its picture. Below
- * "lg" the list of names is dropped and the outcomes simply stack.
+ * "lg" the list of names is dropped and the outcomes stack, and on a phone
+ * they are swiped through one at a time.
  */
 export function Results({ id, label, title, accent }: { id: string; label: string; title: string; accent?: string }) {
   const [active, setActive] = useState(0);
@@ -58,7 +60,12 @@ export function Results({ id, label, title, accent }: { id: string; label: strin
           </ol>
         </nav>
 
-        <div className="flex flex-col gap-14 md:gap-24 lg:col-span-6 lg:col-start-7">
+        <Carousel
+          label={title}
+          gap="loose"
+          className="lg:col-span-6 lg:col-start-7"
+          track="md:flex md:flex-col md:gap-24"
+        >
           {erpBenefits.map((b, i) => {
             const Icon = icons[i];
             const Scene = scenes[i];
@@ -84,7 +91,7 @@ export function Results({ id, label, title, accent }: { id: string; label: strin
               </article>
             );
           })}
-        </div>
+        </Carousel>
       </div>
     </Section>
   );

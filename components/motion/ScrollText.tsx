@@ -2,6 +2,7 @@
 
 import { Fragment, useRef } from "react";
 import { motion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
+import { useLite } from "@/lib/device";
 import { useReducedMotionSafe } from "@/lib/hooks";
 
 /** How faint a word is before the scroll reaches it. */
@@ -107,7 +108,9 @@ function ScrollScribble({
  */
 export function ScrollText({ text, scribble, className }: { text: string; scribble?: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
-  const reduce = useReducedMotionSafe();
+  // A slow device gets the paragraph as it ends, written in full: lighting it word by word is work on every scroll.
+  const lite = useLite();
+  const reduce = useReducedMotionSafe() || lite;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.5"] });
 
   // The text in three parts: the words before the phrase, the phrase with any punctuation attached to it, and the rest.

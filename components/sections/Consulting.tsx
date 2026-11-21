@@ -10,6 +10,7 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
+import { Carousel } from "@/components/ui/Carousel";
 import { Section, SectionHeader, columns } from "@/components/ui/Section";
 import { Reveal } from "@/components/motion/Reveal";
 import { consultingServices } from "@/lib/content";
@@ -19,10 +20,26 @@ const icons: LucideIcon[] = [Workflow, ClipboardList, Boxes, Factory, ShoppingCa
 
 const row = "flex h-full gap-4 border-b border-line py-6";
 
+/* The row that asks for the first conversation. */
+const invitation = (
+  <Link
+    href="#contact"
+    className={`${row} group items-center justify-between text-blue transition-colors duration-200 ease-out hover:text-blue-deep`}
+  >
+    <span className="font-display text-h5">Start with a gap assessment.</span>
+    <ArrowRight
+      aria-hidden
+      strokeWidth={1.5}
+      className="size-5 shrink-0 transition-transform duration-300 ease-swift group-hover:translate-x-1"
+    />
+  </Link>
+);
+
 /**
  * The heading on the left, staying on screen from "lg" while the list beside
  * it scrolls. The seven services run in two columns of rows between
  * hairlines, and an eighth row, in the accent, asks for the first conversation.
+ * On a phone the services are swiped through two at a time.
  */
 export function Consulting() {
   return (
@@ -42,38 +59,41 @@ export function Consulting() {
           </div>
         </div>
 
-        <ul className="grid border-t border-line sm:grid-cols-2 sm:gap-x-6 lg:col-span-7 lg:col-start-6">
-          {consultingServices.map((s, i) => {
-            const Icon = icons[i];
-            return (
-              <li key={s.title}>
-                <Reveal delay={(i % 2) * 0.06} className={row}>
-                  <Icon aria-hidden className="mt-1 size-5 shrink-0 text-blue" strokeWidth={1.5} />
-                  <div>
-                    <h3 className="text-h5 text-navy">{s.title}</h3>
-                    <p className="mt-2 text-caption text-pretty text-muted">{s.body}</p>
-                  </div>
-                </Reveal>
-              </li>
-            );
-          })}
+        <div className="lg:col-span-7 lg:col-start-6">
+          <Carousel
+            as="ul"
+            label="Consulting services"
+            until="sm"
+            rows={2}
+            gap="loose"
+            track="sm:grid sm:grid-cols-2 sm:gap-x-6 sm:border-t sm:border-line"
+          >
+            {consultingServices.map((s, i) => {
+              const Icon = icons[i];
+              return (
+                // In a slide the upper row of each pair draws the hairline the list's top edge draws elsewhere.
+                <li key={s.title} className={i % 2 === 0 ? "max-sm:border-t max-sm:border-line" : ""}>
+                  <Reveal delay={(i % 2) * 0.06} className={row}>
+                    <Icon aria-hidden className="mt-1 size-5 shrink-0 text-blue" strokeWidth={1.5} />
+                    <div>
+                      <h3 className="text-h5 text-navy">{s.title}</h3>
+                      <p className="mt-2 text-caption text-pretty text-muted">{s.body}</p>
+                    </div>
+                  </Reveal>
+                </li>
+              );
+            })}
 
-          <li>
-            <Reveal delay={0.06} className="h-full">
-              <Link
-                href="#contact"
-                className={`${row} group items-center justify-between text-blue transition-colors duration-200 ease-out hover:text-blue-deep`}
-              >
-                <span className="font-display text-h5">Start with a gap assessment.</span>
-                <ArrowRight
-                  aria-hidden
-                  strokeWidth={1.5}
-                  className="size-5 shrink-0 transition-transform duration-300 ease-swift group-hover:translate-x-1"
-                />
-              </Link>
-            </Reveal>
-          </li>
-        </ul>
+            <li className="max-sm:hidden">
+              <Reveal delay={0.06} className="h-full">
+                {invitation}
+              </Reveal>
+            </li>
+          </Carousel>
+
+          {/* On a phone the invitation stays put under the slides, so it is never the last thing to be swiped to. */}
+          <Reveal className="mt-6 border-t border-line sm:hidden">{invitation}</Reveal>
+        </div>
       </div>
     </Section>
   );

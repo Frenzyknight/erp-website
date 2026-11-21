@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
+/*
+ * A slow device gets the lite site (see lib/device.ts), which marks the page
+ * with data-perf="lite". Write `lite:` before a utility to apply it only there.
+ */
+@custom-variant lite (&:where([data-perf="lite"], [data-perf="lite"] *));
+
 @theme {
   /*
    * Palette: the Polaris colours, each in a fixed role.
@@ -481,6 +487,15 @@
   background-size: var(--dot-gap, 56px) var(--dot-gap, 56px);
 }
 
+/* A row that is swiped sideways shows no scrollbar: the carousel draws its own bar under the row. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   :root {
     --page-pad: 16px;
@@ -513,7 +528,9 @@
   html {
     color-scheme: light;
     background: var(--color-navy);
+    /* A phone turned on its side must not enlarge the text by itself. */
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -645,6 +662,83 @@
     --text-body: 2.5cqw;
     --text-body--line-height: 3.125cqw;
     --text-stat: 8.75cqw;
+    /* The page's tracking is inherited as a fixed length, worked out at the page's type size. Stated again here, it follows the picture's. */
+    letter-spacing: -0.011em;
+  }
+
+  /*
+   * The loading screen (components/layout/Loader.tsx). It covers the page from
+   * the first paint and opens once the page is ready. The script opens it; if
+   * the script never runs, the last animation here lifts it, a few seconds on.
+   */
+  .loader {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    background: var(--color-night);
+    transition:
+      opacity 0.5s ease-out,
+      visibility 0s 0.5s;
+    animation: loader-lift 0.5s ease-out 7s forwards;
+  }
+
+  /* The script has taken over, and lifts the screen itself. */
+  .loader[data-live] {
+    animation: none;
+  }
+
+  /* The plain way out, for reduced motion: a fade. */
+  .loader[data-state="lifting"] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Opening, the dark is the drawing inside the screen, with the star cut out of it, and the page can be reached through it. */
+  .loader[data-state="opening"] {
+    background: none;
+    pointer-events: none;
+  }
+
+  .loader-foot {
+    transition: opacity 0.25s ease-out;
+  }
+
+  .loader[data-state="opening"] .loader-foot {
+    opacity: 0;
+  }
+
+  /* The line under the count. The script sets how much of it is filled. */
+  .loader-bar {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* A quarter turn and a rest. The star has four points, so every turn ends looking as it began. */
+  .loader-star {
+    animation: loader-turn 1.3s var(--ease-swift) infinite;
+  }
+
+  @keyframes loader-turn {
+    0% {
+      transform: none;
+    }
+    35% {
+      transform: rotate(45deg) scale(1.15);
+    }
+    80%,
+    100% {
+      transform: rotate(90deg);
+    }
+  }
+
+  @keyframes loader-lift {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
   }
 
   /*
@@ -696,6 +790,19 @@
       transition-delay: 0.1s;
     }
   }
+}
+
+/*
+ * The lite site keeps the motion that explains something (entrances, the
+ * hero's film, anything that answers a press) and stops what only loops for
+ * show: the moves inside the pictures, the pulsing lights and the footer's
+ * running line. Each is cut short to its last frame, which is its finished
+ * state.
+ */
+[data-perf="lite"] :is([class*="animate-scene-"], .animate-ping, .animate-marquee) {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

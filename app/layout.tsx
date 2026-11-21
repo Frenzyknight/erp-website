@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Covered_By_Your_Grace, Geist_Mono, Hanken_Grotesk, Inter } from "next/font/google";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
+import { Loader } from "@/components/layout/Loader";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { company } from "@/lib/content";
 import "./globals.css";
@@ -91,6 +92,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
+        <Loader fonts={[display, sans, mono, scribble].map((face) => face.style.fontFamily)} />
+        {/* Without scripts nothing is waited for, and nothing would lift the screen until its own timer ran out. */}
+        <noscript>
+          <style>{".loader{display:none}"}</style>
+        </noscript>
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-5 focus:py-4 focus:mono-label focus:text-navy"

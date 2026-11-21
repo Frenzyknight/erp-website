@@ -17,7 +17,7 @@ export function Logo() {
     <Link
       href="/"
       aria-label="Polaris Consulting home"
-      className="flex shrink-0 items-center gap-2 text-white transition-opacity duration-200 hover:opacity-80"
+      className="flex shrink-0 items-center gap-2 py-3 text-white transition-opacity duration-200 hover:opacity-80"
     >
       <StarMark className="size-5 text-blue md:size-6" />
       <span className="font-display text-md tracking-[-0.02em] whitespace-nowrap md:text-[1.25rem]">

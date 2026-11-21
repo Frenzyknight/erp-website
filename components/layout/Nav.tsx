@@ -107,7 +107,7 @@ export function Nav() {
       <motion.div
         aria-hidden
         style={{ opacity: menuOpen ? 1 : backdrop }}
-        className={`absolute inset-0 border-b border-white/10 ${menuOpen ? "bg-navy" : "bg-navy/85 backdrop-blur-md"}`}
+        className={`absolute inset-0 border-b border-white/10 ${menuOpen ? "bg-navy" : "bg-navy/85 backdrop-blur-md lite:bg-navy/95 lite:backdrop-blur-none"}`}
       />
 
       <div className="relative flex h-[var(--header-h)] items-center justify-between gap-4 px-page">

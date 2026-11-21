@@ -220,7 +220,7 @@ export function FlowScene() {
         <Arrow turn={2.1} />
 
         <div className="flex w-60 flex-col items-center rounded-md bg-navy px-5 py-10 text-center">
-          <span className="block overflow-hidden text-stat text-sky">
+          <span className="block overflow-hidden font-display text-stat text-sky">
             <span style={at(3)} className="block animate-scene-rise">
               96.2%
             </span>
