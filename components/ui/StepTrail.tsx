@@ -127,8 +127,8 @@ const rings = [
  * Steps as cards on alternating sides of a path that winds down the section.
  * The path is dotted until the visitor scrolls past it, when it is drawn in
  * the accent; each step's marker switches on as the line arrives, and the
- * step it reached last carries rings and a glow. It is made for the "surface"
- * sheet.
+ * step it reached last carries rings, and its card lifts off the sheet. It is
+ * made for the "surface" sheet.
  *
  * On a phone the steps are a carousel instead. The path runs sideways through
  * the markers, one stretch per step, and the step in front is the one the
@@ -195,7 +195,7 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
         {reduce ? <path {...line} /> : <motion.path {...line} style={{ pathLength: drawn }} />}
       </svg>
 
-      {/* The row is deeper than its cards, so the glow under the step in front is not cut off; the controls move up into the spare room. */}
+      {/* The row is deeper than its cards, so the shadow under the step in front is not cut off; the controls move up into the spare room. */}
       <Carousel as="ol" label="Steps" onChange={setSlide} track="max-md:-mb-12 max-md:pb-14">
         {steps.map((step, i) => {
           const { icon: Icon, Visual } = step;
@@ -263,15 +263,17 @@ export function StepTrail({ steps }: { steps: TrailStep[] }) {
               </span>
 
               <div
-                className={`rounded-lg bg-white p-2 transition-shadow duration-700 ease-out max-md:mt-7 max-md:flex-1 md:row-start-1 md:w-full md:max-w-[22rem] ${
+                className={`rounded-lg bg-white p-2 transition-[box-shadow,translate] duration-700 ease-swift max-md:mt-7 max-md:flex-1 md:row-start-1 md:w-full md:max-w-[22rem] ${
                   cardLeft ? "md:col-start-1 md:justify-self-end" : "md:col-start-3 md:justify-self-start"
-                } ${active ? "shadow-glow" : "shadow-card"}`}
+                } ${active ? "-translate-y-1 shadow-float" : "shadow-card"}`}
               >
                 <div aria-hidden className="h-48 overflow-hidden rounded-md border border-line bg-surface">
                   <Visual on={on} />
                 </div>
                 <div className="px-4 pb-4 pt-5">
-                  <p className="mono-label text-muted">Step {i + 1}</p>
+                  <p className={`mono-label transition-colors duration-500 ease-out ${active ? "text-blue" : "text-muted"}`}>
+                    Step {i + 1}
+                  </p>
                   <h3 className="mt-2 text-h5 text-navy">{step.title}</h3>
                   <p className="mt-2 text-caption text-pretty text-muted">{step.body}</p>
                 </div>

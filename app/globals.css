@@ -103,11 +103,9 @@
   --text-stat-lg--letter-spacing: -0.04em;
   --text-stat-lg--font-weight: 300;
 
-  /* The page is flat. Depth is kept for the product mock-ups: a lift under floating cards, and a blue halo on whatever is active. */
+  /* The page is flat. Depth is kept for the product mock-ups: a soft shadow under cards, and a deeper one under whatever floats or is active. */
   --shadow-card: 0 8px 24px rgb(11 27 46 / 0.06);
   --shadow-float: 0 24px 60px rgb(11 27 46 / 0.16);
-  --shadow-glow:
-    0 0 14px 4px rgb(43 92 240 / 0.14), 0 16px 60px 13px rgb(43 92 240 / 0.2), 0 0 32px rgb(43 92 240 / 0.2);
 
   /* "rise" is the hard ease-out used for entrances, "swift" for interface moves, "wipe" for button labels. */
   --ease-rise: cubic-bezier(0, 1, 0.4, 1);
